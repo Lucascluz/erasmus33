@@ -1,11 +1,11 @@
 export interface House {
 	id: number;
 	street: string;
-	mapsLink: string;
-	streetView: string;
-	totalRooms: number;
-	availableRooms: number[];
+	maps_link: string;
+	street_view: string;
+	total_rooms: number;
+	available_rooms: number[];
 	images: string[];
-	postalCode: string;
+	postal_code: string;
 	number: string;
 }

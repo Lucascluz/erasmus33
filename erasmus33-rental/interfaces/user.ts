@@ -2,13 +2,13 @@ import { UUID } from 'crypto';
 
 export interface User {
 	id: UUID;
-	fullName: string;
+	full_name: string;
 	nationality: string;
-	preferredLanguage: string;
-	roomNumber: number;
-	houseNumber: number;
-	arrivalDate: Date;
-	departureEstimate: Date;
+	preferred_language: string;
+	room_number: number;
+	house_number: number;
+	arrival_date: Date;
+	departure_estimate: Date;
 	role: string;
-	profilePicture: string;
+	profile_picture: string;
 }

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { UUID } from 'crypto';
 import { supabase } from '@/lib/supabase';
 import { User } from '@/interfaces/user';
 export default function ProfilePage() {
@@ -38,24 +37,25 @@ export default function ProfilePage() {
 
 	return (
 		<div className='max-w-lg mx-auto p-6 shadow-md rounded-lg'>
-			<h2 className='text-2xl font-bold mb-4'>{user.fullName}</h2>
+			<h2 className='text-2xl font-bold mb-4'>{user.full_name}</h2>
 			<p>
 				<strong>Nationality:</strong> {user.nationality}
 			</p>
 			<p>
-				<strong>Preferred Language:</strong> {user.preferredLanguage}
+				<strong>Preferred Language:</strong> {user.preferred_language}
 			</p>
 			<p>
-				<strong>Room:</strong> {user.roomNumber}
+				<strong>Room:</strong> {user.room_number}
 			</p>
 			<p>
-				<strong>House:</strong> {user.houseNumber}
+				<strong>House:</strong> {user.house_number}
 			</p>
 			<p>
-				<strong>Arrival:</strong> {new Date(user.arrivalDate).toLocaleDateString()}
+				<strong>Arrival:</strong> {new Date(user.arrival_date).toLocaleDateString()}
 			</p>
 			<p>
-				<strong>Departure Estimate:</strong> {new Date(user.departureEstimate).toLocaleDateString()}
+				<strong>Departure Estimate:</strong>{' '}
+				{new Date(user.departure_estimate).toLocaleDateString()}
 			</p>
 		</div>
 	);

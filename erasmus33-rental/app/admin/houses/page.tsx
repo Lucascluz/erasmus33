@@ -17,45 +17,22 @@ export default function HousesPage() {
 			const { data, error } = await supabase.from('houses').select('*');
 			if (error) console.error('Error fetching houses:', error);
 			else setHouses(data);
+			console.log(data);
 		};
 		fetchHouses();
 	}, []);
 
-	const deleteHouse = async (id: number) => {
-		const { error } = await supabase.from('houses').delete().eq('id', id);
-		if (error) {
-			console.error('Error deleting house:', error);
-		} else {
-			setHouses(houses.filter((house) => house.id !== id));
-		}
-	};
-
-	function editHouse(house: House) {
-		async (id: number) => {
-			const { error } = await supabase
-				.from('houses')
-				.update({ other_column: 'otherValue' })
-				.eq('some_column', 'someValue')
-				.select();
-			if (error) {
-				console.error('Error deleting house:', error);
-			} else {
-				setHouses(houses.filter((house) => house.id !== id));
-			}
-		};
-	}
-
 	return (
 		<div className='container mx-auto py-6'>
 			<h1 className='text-2xl font-bold mb-4'>Manage Houses</h1>
-			<Link href='/houses/new'>
+			<Link href='/admin/houses/new'>
 				<Button>Add New House</Button>
 			</Link>
 			<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4'>
 				{houses.map((house) => (
 					<Card
 						key={house.id}
-						onPress={() => router.push(`/houses/${house.id}`)}
+						onPress={() => router.push(`/admin/houses/${house.id}`)}
 						className='cursor-pointer'>
 						<CardHeader>House {house.id}</CardHeader>
 						{house.images.length > 0 ? (
@@ -77,18 +54,10 @@ export default function HousesPage() {
 								}}>
 								Edit
 							</Button>
-							<Button
-								variant='solid'
-                                color='danger'
-								onPress={() => {
-									deleteHouse(house.id);
-								}}>
-								Delete
-							</Button>
 						</div>
 						<div className='flex justify-between p-3'>
-							<p>Total Rooms: {house.totalRooms}</p>
-							<p>Available Rooms: {house.availableRooms}</p>
+							<p>Total Rooms: {house.total_rooms}</p>
+							<p>Available Rooms: {house.available_rooms}</p>
 						</div>
 					</Card>
 				))}

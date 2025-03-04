@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation'; // Alternative for App Router
+import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@heroui/button';
 import { Input } from '@heroui/input';
-import { Card, CardHeader } from '@heroui/card';
+import { Card, CardFooter } from '@heroui/card';
 import { House } from '@/interfaces/house';
+import { TrashIcon } from '@heroicons/react/24/solid';
 
 export default function HousePage() {
+	const router = useRouter();
+
 	const [house, setHouse] = useState<House | null>(null);
 	const [newImages, setNewImages] = useState<FileList | null>(null);
 	const [loading, setLoading] = useState(false);
@@ -41,14 +44,16 @@ export default function HousePage() {
 			const filePath = `houses/${house.id}/${file.name}`;
 
 			const { error } = await supabase.storage
-				.from('images')
-				.upload(filePath, file);
+				.from('house_images')
+				.upload(filePath, file, { upsert: true });
+
 			if (error) {
-				console.error('Error uploading image:', error);
-				continue;
+				console.error('Error uploading image:', JSON.stringify(error, null, 2));
 			}
 
-			const { data } = supabase.storage.from('images').getPublicUrl(filePath);
+			const { data } = supabase.storage
+				.from('house_images')
+				.getPublicUrl(filePath);
 			if (data?.publicUrl) {
 				images.push(data.publicUrl);
 			}
@@ -72,11 +77,11 @@ export default function HousePage() {
 			.update({
 				street: updatedHouse.street,
 				number: updatedHouse.number,
-				postal_code: updatedHouse.postalCode,
-				mapsLink: updatedHouse.mapsLink,
-				streetView: updatedHouse.streetView,
-				total_rooms: updatedHouse.totalRooms,
-				available_rooms: updatedHouse.availableRooms,
+				postal_code: updatedHouse.postal_code,
+				maps_link: updatedHouse.maps_link,
+				street_view: updatedHouse.street_view,
+				total_rooms: updatedHouse.total_rooms,
+				available_rooms: updatedHouse.available_rooms,
 				images: updatedHouse.images,
 			})
 			.eq('id', house.id)
@@ -92,11 +97,29 @@ export default function HousePage() {
 		}
 	};
 
+	const deleteHouse = async (id: number) => {
+		const { error } = await supabase.from('houses').delete().eq('id', id);
+		if (error) {
+			console.error('Error deleting house:', error);
+		}
+		router.push('/admin/houses');
+	};
+
 	if (!house) return <div>Loading...</div>;
+
+	function deleteImage(id: number) {
+		throw new Error('Function not implemented.');
+	}
 
 	return (
 		<div className='container mx-auto py-6'>
-			<h1 className='text-2xl font-bold mb-4'>Editing House {house.id}</h1>
+			<div className='flex justify-between items-center'>
+				<h1 className='text-2xl font-bold mb-4'>Editing House {house.id}</h1>
+				<Button variant='bordered' onPress={() => router.push('/admin/houses')}>
+					Back to Houses
+				</Button>
+			</div>
+
 			<Card className='p-4'>
 				<form onSubmit={handleSubmit} className='space-y-4'>
 					<p>Adress</p>
@@ -117,8 +140,8 @@ export default function HousePage() {
 						<Input
 							label='Postal Code'
 							type='text'
-							value={house.postalCode ?? ''}
-							onChange={(e) => setHouse({ ...house, postalCode: e.target.value })}
+							value={house.postal_code ?? ''}
+							onChange={(e) => setHouse({ ...house, postal_code: e.target.value })}
 							maxLength={7}
 						/>
 					</div>
@@ -127,14 +150,14 @@ export default function HousePage() {
 						<Input
 							label='Maps Link'
 							type='url'
-							value={house.mapsLink ?? ''}
-							onChange={(e) => setHouse({ ...house, mapsLink: e.target.value })}
+							value={house.maps_link ?? ''}
+							onChange={(e) => setHouse({ ...house, maps_link: e.target.value })}
 						/>
 						<Input
 							label='Street View Link'
 							type='url'
-							value={house.streetView ?? ''}
-							onChange={(e) => setHouse({ ...house, streetView: e.target.value })}
+							value={house.street_view ?? ''}
+							onChange={(e) => setHouse({ ...house, street_view: e.target.value })}
 						/>
 					</div>
 
@@ -143,19 +166,19 @@ export default function HousePage() {
 						<Input
 							label='Total Rooms'
 							type='number'
-							value={house.totalRooms ? house.totalRooms.toString() : '0'}
+							value={house.total_rooms ? house.total_rooms.toString() : '0'}
 							onChange={(e) =>
-								setHouse({ ...house, totalRooms: parseInt(e.target.value, 10) || 0 })
+								setHouse({ ...house, total_rooms: parseInt(e.target.value, 10) || 0 })
 							}
 						/>
 						<Input
 							label='Available Rooms'
 							type='text'
-							value={house.availableRooms ? house.availableRooms.join(', ') : ''}
+							value={house.available_rooms ? house.available_rooms.join(', ') : ''}
 							onChange={(e) =>
 								setHouse({
 									...house,
-									availableRooms: e.target.value
+									available_rooms: e.target.value
 										.split(',')
 										.map((num) => parseInt(num, 10) || 0),
 								})
@@ -163,9 +186,10 @@ export default function HousePage() {
 						/>
 					</div>
 
-					<div>
-						<label>Upload New Images</label>
-						<input
+					<p>Upload New Images</p>
+					<div className='flex items-center space-x-4'>
+						<Input
+							color='primary'
 							type='file'
 							multiple
 							onChange={(e) => setNewImages(e.target.files)}
@@ -176,37 +200,69 @@ export default function HousePage() {
 					</div>
 					<div>
 						{house.images?.length > 0 ? (
-							<div className='grid grid-cols-3 gap-4'>
+							<div className='grid grid-cols-4 gap-3'>
 								{house.images.map((image, index) => (
-									<img
-										key={index}
-										src={image}
-										alt={`House Image ${index}`}
-										className='w-full h-48 object-cover rounded'
-									/>
+									<Card
+										key={house.id}
+										onPress={() => router.push(`/admin/houses/${house.id}`)}
+										className='cursor-pointer'>
+										{house.images.length > 0 ? (
+											<img
+												key={index}
+												src={image}
+												alt={`House Image ${index}`}
+												className='w-full h-48 object-cover rounded'
+											/>
+										) : (
+											<div className='w-full h-48 flex justify-center items-center'>
+												<span className='text-gray-500'>No Image Available</span>
+											</div>
+										)}
+										<CardFooter className='flex justify-end'>
+											<Button
+												className='h-10'
+												variant='solid'
+												color='danger'
+												onPress={() => {
+													deleteImage(house.id);
+												}}>
+												<TrashIcon className='h-5 w-5' />
+											</Button>
+										</CardFooter>
+									</Card>
 								))}
 							</div>
 						) : (
-							<p>No images available</p>
+							<p>No images related to this house</p>
 						)}
 					</div>
-					<Button variant='solid' type='submit'>
-						Save Changes
-					</Button>
+					<div className='flex justify-between'>
+						<Button variant='solid' type='submit'>
+							Save Changes
+						</Button>
+						<Button
+							variant='solid'
+							color='danger'
+							onPress={() => {
+								deleteHouse(house.id);
+							}}>
+							Delete
+						</Button>
+					</div>
 				</form>
 			</Card>
 			<div className='mt-4'>
-				{house.mapsLink && (
+				{house.maps_link && (
 					<Button
 						variant='bordered'
-						onPress={() => window.open(house.mapsLink, '_blank')}>
+						onPress={() => window.open(house.maps_link, '_blank')}>
 						Open Maps
 					</Button>
 				)}
-				{house.streetView && (
+				{house.street_view && (
 					<Button
 						variant='bordered'
-						onPress={() => window.open(house.streetView, '_blank')}>
+						onPress={() => window.open(house.street_view, '_blank')}>
 						Open Street View
 					</Button>
 				)}
