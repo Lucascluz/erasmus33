@@ -1,8 +1,8 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-	name: 'Next.js + HeroUI',
-	description: 'Make beautiful websites regardless of your design experience.',
+	name: 'Erasmus 33',
+	description: 'We are the best option for those looking for an incredible stay and experience in the city of Guarda!',
 	navItems: [
 		{
 			label: 'Houses',

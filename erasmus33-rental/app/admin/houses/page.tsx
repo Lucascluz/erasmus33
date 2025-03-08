@@ -34,7 +34,7 @@ export default function HousesPage() {
 						key={house.id}
 						onPress={() => router.push(`/admin/houses/${house.id}`)}
 						className='cursor-pointer'>
-						<CardHeader>House {house.id}</CardHeader>
+						<CardHeader>House {house.number}</CardHeader>
 						{house.images.length > 0 ? (
 							<img
 								src={house.images[0]}

@@ -23,7 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*
+/erasmus33-rental/.env*
 
 # vercel
 .vercel

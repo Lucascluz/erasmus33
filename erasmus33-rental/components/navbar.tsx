@@ -5,6 +5,9 @@ import {
 	NavbarContent,
 	NavbarBrand,
 	NavbarItem,
+	NavbarMenu,
+	NavbarMenuItem,
+	NavbarMenuToggle,
 } from '@heroui/navbar';
 import { Link } from '@heroui/link';
 import { link as linkStyles } from '@heroui/theme';
@@ -20,6 +23,7 @@ import { Button } from '@heroui/button';
 import { User } from '@supabase/supabase-js';
 
 export const Navbar = () => {
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const [user, setUser] = useState<User | null>(null);
 	const [role, setRole] = useState<string | null>(null);
 
@@ -45,9 +49,21 @@ export const Navbar = () => {
 	}, []);
 
 	return (
-		<HeroUINavbar maxWidth='xl' position='sticky'>
+		<HeroUINavbar
+			maxWidth='xl'
+			position='sticky'
+			isMenuOpen={isMenuOpen}
+			isBordered>
 			<NavbarContent className='basis-1/5 sm:basis-full' justify='start'>
-				<NavbarBrand as='li' className='gap-3 max-w-fit'>
+				<NavbarMenuToggle
+					aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+					className='lg:hidden'
+					onClick={() => setIsMenuOpen(!isMenuOpen)}
+				/>
+				<NavbarBrand
+					as='li'
+					className='gap-3 max-w-fit'
+					onClick={() => setIsMenuOpen(false)}>
 					<NextLink className='flex justify-start items-center gap-4' href='/'>
 						<Avatar
 							className='w-12 h-12 text-large'
@@ -116,6 +132,37 @@ export const Navbar = () => {
 					</Button>
 				</NavbarItem>
 			</NavbarContent>
+			<NavbarMenu>
+				{user
+					? (role === 'admin' ? siteConfig.navAdminItems : siteConfig.navItems).map(
+							(item) => (
+								<NavbarMenuItem key={item.href}>
+									<NextLink
+										className={clsx(
+											linkStyles({ color: 'foreground' }),
+											'data-[active=true]:text-primary data-[active=true]:font-medium'
+										)}
+										color='foreground'
+										href={item.href}>
+										<p onClick={()=>{setIsMenuOpen(false)}}>{item.label}</p>
+									</NextLink>
+								</NavbarMenuItem>
+							)
+						)
+									: siteConfig.navItems.map((item) => (
+							<NavbarMenuItem key={item.href}>
+								<NextLink
+									className={clsx(
+										linkStyles({ color: 'foreground' }),
+										'data-[active=true]:text-primary data-[active=true]:font-medium'
+									)}
+									color='foreground'
+									href={item.href}>
+									{item.label}
+								</NextLink>
+							</NavbarMenuItem>
+						))}
+			</NavbarMenu>
 		</HeroUINavbar>
 	);
 };

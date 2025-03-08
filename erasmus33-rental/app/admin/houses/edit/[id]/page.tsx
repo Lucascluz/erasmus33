@@ -9,7 +9,7 @@ import { Card, CardFooter } from '@heroui/card';
 import { House } from '@/interfaces/house';
 import { TrashIcon } from '@heroicons/react/24/solid';
 
-export default function HousePage() {
+export default function HouseEditPage() {
 	const router = useRouter();
 
 	const [house, setHouse] = useState<House | null>(null);
@@ -34,45 +34,99 @@ export default function HousePage() {
 		fetchHouse();
 	}, [id]);
 
-	const handleImageUpload = async () => {
-		if (!newImages || !house) return;
-		setLoading(true);
+	async function uploadHouseImages(houseId: number, files: FileList) {
+		if (!house) return;
 
-		const images: string[] = [];
-		for (let i = 0; i < newImages.length; i++) {
-			const file = newImages[i];
-			const filePath = `houses/${house.id}/${file.name}`;
+		const newUrls: string[] = [];
+		const updatedImages = [...(house.images || [])]; // Create a new copy
 
-			const { error } = await supabase.storage
+		// Optimistically update UI before upload finishes
+		for (const file of Array.from(files)) {
+			const tempUrl = URL.createObjectURL(file); // Create a temporary URL
+			updatedImages.push(tempUrl); // Add to UI
+		}
+		setHouse({ ...house, images: updatedImages });
+
+		for (const file of Array.from(files)) {
+			const filePath = `house_${houseId}/${file.name}`;
+
+			const { data, error } = await supabase.storage
 				.from('house_images')
-				.upload(filePath, file, { upsert: true });
+				.upload(filePath, file);
 
 			if (error) {
-				console.error('Error uploading image:', JSON.stringify(error, null, 2));
+				console.error('Error uploading image:', error.message);
+				continue;
 			}
 
-			const { data } = supabase.storage
+			const { data: publicURL } = supabase.storage
 				.from('house_images')
 				.getPublicUrl(filePath);
-			if (data?.publicUrl) {
-				images.push(data.publicUrl);
+
+			if (publicURL.publicUrl) {
+				newUrls.push(publicURL.publicUrl);
 			}
 		}
 
-		await updateHouse(images);
-		setLoading(false);
-	};
+		if (newUrls.length === 0) {
+			console.error('No images successfully uploaded.');
+			return;
+		}
 
-	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-		event.preventDefault();
-		await updateHouse();
-	};
+		// Merge real URLs and update the database
+		const finalImages = [...(house.images || []), ...newUrls];
 
-	const updateHouse = async (newImages: string[] = []) => {
+		const { error: updateError } = await supabase
+			.from('houses')
+			.update({ images: finalImages })
+			.eq('id', houseId);
+
+		if (updateError) {
+			console.error('Error updating house images:', updateError.message);
+		} else {
+			setHouse({ ...house, images: finalImages }); // Ensure UI reflects real URLs
+		}
+	}
+
+	async function deleteHouseImage(houseId: number, imageUrl: string) {
 		if (!house) return;
-		const updatedHouse = { ...house, images: [...house.images, ...newImages] };
 
-		const { data, error } = await supabase
+		// Optimistically update UI first
+		const updatedImages = house.images?.filter((img) => img !== imageUrl) || [];
+		setHouse({ ...house, images: updatedImages });
+
+		// Extract file path from URL
+		const filePath = imageUrl.split('/').slice(-2).join('/');
+
+		const { error } = await supabase.storage
+			.from('house_images')
+			.remove([filePath]);
+
+		if (error) {
+			console.error('Error deleting image:', error.message);
+			return;
+		}
+
+		// Sync with the database
+		const { error: updateError } = await supabase
+			.from('houses')
+			.update({ images: updatedImages })
+			.eq('id', houseId);
+
+		if (updateError) {
+			console.error('Error updating house images:', updateError.message);
+		}
+	}
+
+	// Update house data in the database
+	const updateHouseData = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		if (!house) return;
+		setLoading(true);
+		const updatedHouse = { ...house };
+
+		console.log('Updating house data:', updatedHouse);
+		const { error: updError } = await supabase
 			.from('houses')
 			.update({
 				street: updatedHouse.street,
@@ -82,34 +136,42 @@ export default function HousePage() {
 				street_view: updatedHouse.street_view,
 				total_rooms: updatedHouse.total_rooms,
 				available_rooms: updatedHouse.available_rooms,
-				images: updatedHouse.images,
 			})
-			.eq('id', house.id)
-			.select();
+			.eq('id', house.id);
 
-		console.log('Supabase Update Response:', { data, error });
-
-		if (error) {
-			console.error('Error updating house:', error.message, error.details);
+		if (updError) {
+			console.error('Error updating house:', updError.message, updError.details);
 		} else {
-			alert('House updated successfully!');
+			console.log('House updated successfully:', updatedHouse);
 			setHouse(updatedHouse);
 		}
+		setLoading(false);
 	};
 
 	const deleteHouse = async (id: number) => {
-		const { error } = await supabase.from('houses').delete().eq('id', id);
-		if (error) {
-			console.error('Error deleting house:', error);
+		setLoading(true);
+		// Delete house data from the database
+		console.log('Deleting house with ID:', id);
+		const { error: dbError } = await supabase
+			.from('houses')
+			.delete()
+			.eq('id', id);
+		if (dbError) {
+			console.error('Error deleting house:', dbError);
+		}
+
+		// Delete house images from the storage bucket
+		const { error: errorST } = await supabase.storage.deleteBucket(
+			`houses/${id}`
+		);
+		if (errorST) {
+			console.error('Error deleting house images:', errorST);
 		}
 		router.push('/admin/houses');
+		setLoading(false);
 	};
 
 	if (!house) return <div>Loading...</div>;
-
-	function deleteImage(id: number) {
-		throw new Error('Function not implemented.');
-	}
 
 	return (
 		<div className='container mx-auto py-6'>
@@ -121,7 +183,7 @@ export default function HousePage() {
 			</div>
 
 			<Card className='p-4'>
-				<form onSubmit={handleSubmit} className='space-y-4'>
+				<form onSubmit={updateHouseData} className='space-y-4'>
 					<p>Adress</p>
 					<div className='grid grid-cols-3 gap-4'>
 						<Input
@@ -192,9 +254,21 @@ export default function HousePage() {
 							color='primary'
 							type='file'
 							multiple
-							onChange={(e) => setNewImages(e.target.files)}
+							onChange={(e) => {
+								if (e && e.target && e.target.files) {
+									setNewImages(e.target.files);
+								}
+							}}
 						/>
-						<Button variant='solid' onPress={handleImageUpload} disabled={loading}>
+						<Button
+							variant='solid'
+							color={newImages ? 'success' : 'default'}
+							onPress={() => {
+								if (newImages) {
+									uploadHouseImages(house.id, newImages);
+								}
+							}}
+							disabled={loading || !newImages}>
 							{loading ? 'Uploading...' : 'Upload Images'}
 						</Button>
 					</div>
@@ -202,10 +276,7 @@ export default function HousePage() {
 						{house.images?.length > 0 ? (
 							<div className='grid grid-cols-4 gap-3'>
 								{house.images.map((image, index) => (
-									<Card
-										key={house.id}
-										onPress={() => router.push(`/admin/houses/${house.id}`)}
-										className='cursor-pointer'>
+									<Card key={house.id + index} className='cursor-pointer'>
 										{house.images.length > 0 ? (
 											<img
 												key={index}
@@ -223,9 +294,7 @@ export default function HousePage() {
 												className='h-10'
 												variant='solid'
 												color='danger'
-												onPress={() => {
-													deleteImage(house.id);
-												}}>
+												onPress={() => deleteHouseImage(house.id, image)}>
 												<TrashIcon className='h-5 w-5' />
 											</Button>
 										</CardFooter>
@@ -237,9 +306,24 @@ export default function HousePage() {
 						)}
 					</div>
 					<div className='flex justify-between'>
-						<Button variant='solid' type='submit'>
+						<Button variant='solid' type='submit' color='primary'>
 							Save Changes
 						</Button>
+
+						{house.maps_link ? (
+							<Button
+								variant='bordered'
+								onPress={() => window.open(house.maps_link, '_blank')}>
+								Open on Maps
+							</Button>
+						) : null}
+						{house.street_view ? (
+							<Button
+								variant='bordered'
+								onPress={() => window.open(house.street_view, '_blank')}>
+								Open on Street View
+							</Button>
+						) : null}
 						<Button
 							variant='solid'
 							color='danger'
@@ -251,22 +335,6 @@ export default function HousePage() {
 					</div>
 				</form>
 			</Card>
-			<div className='mt-4'>
-				{house.maps_link && (
-					<Button
-						variant='bordered'
-						onPress={() => window.open(house.maps_link, '_blank')}>
-						Open Maps
-					</Button>
-				)}
-				{house.street_view && (
-					<Button
-						variant='bordered'
-						onPress={() => window.open(house.street_view, '_blank')}>
-						Open Street View
-					</Button>
-				)}
-			</div>
 		</div>
 	);
 }
