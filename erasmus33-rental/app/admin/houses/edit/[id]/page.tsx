@@ -50,7 +50,7 @@ export default function HouseEditPage() {
 		for (const file of Array.from(files)) {
 			const filePath = `house_${houseId}/${file.name}`;
 
-			const { data, error } = await supabase.storage
+			const { error } = await supabase.storage
 				.from('house_images')
 				.upload(filePath, file);
 
@@ -176,7 +176,9 @@ export default function HouseEditPage() {
 	return (
 		<div className='container mx-auto py-6'>
 			<div className='flex justify-between items-center'>
-				<h1 className='text-2xl font-bold mb-4'>Editing House {house.id}</h1>
+				<h1 className='text-2xl font-bold mb-4'>
+					Editing House: {house.number} at {house.street}
+				</h1>
 				<Button variant='bordered' onPress={() => router.push('/admin/houses')}>
 					Back to Houses
 				</Button>

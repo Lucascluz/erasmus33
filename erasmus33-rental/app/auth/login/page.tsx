@@ -3,27 +3,33 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { LockClosedIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
+import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
+	const router = useRouter();
+
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
-	const [isSignUp, setIsSignUp] = useState(false);
+	const [isRegsitered, setIsRegsitered] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const handleAuth = async (e: { preventDefault: () => void }) => {
+	const handleLogin = async (e: { preventDefault: () => void }) => {
 		e.preventDefault();
 		setLoading(true);
 		setError(null);
 
-		const { error } = isSignUp
-			? await supabase.auth.signUp({ email, password })
-			: await supabase.auth.signInWithPassword({ email, password });
+		const { error: spbError } = await supabase.auth.signInWithPassword({
+			email,
+			password,
+		});
 
-		if (error) {
-			setError(error.message);
+		if (spbError) {
+			setError(spbError.message);
 		} else {
-			alert('Check your email for verification!');
+			setIsRegsitered(true);
+			router.refresh();
+			router.push('/'); // Redirect to home page
 		}
 
 		setLoading(false);
@@ -33,10 +39,10 @@ export default function AuthPage() {
 		<div className='flex min-h-screen items-center justify-center'>
 			<div className='w-full max-w-md space-y-8 rounded-lg'>
 				<h2 className='text-center text-2xl font-bold'>
-					{isSignUp ? 'Sign Up' : 'Sign In'}
+					{isRegsitered ? 'Sign Up' : 'Sign In'}
 				</h2>
 				{error && <p className='text-red-500 text-center'>{error}</p>}
-				<form className='space-y-4' onSubmit={handleAuth}>
+				<form className='space-y-4' onSubmit={handleLogin}>
 					<div>
 						<label className='block text-sm font-medium'>Email</label>
 						<div className='relative mt-1'>
@@ -69,15 +75,15 @@ export default function AuthPage() {
 						type='submit'
 						className='w-full rounded-md bg-indigo-600 py-2 text-white hover:bg-indigo-700'
 						disabled={loading}>
-						{loading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
+						{loading ? 'Processing...' : isRegsitered ? 'Sign Up' : 'Sign In'}
 					</button>
 				</form>
 				<p className='text-center text-sm text-gray-600'>
-					{isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+					{isRegsitered ? 'Already have an account?' : "Don't have an account?"}{' '}
 					<button
-						onClick={() => setIsSignUp(!isSignUp)}
+						onClick={() => setIsRegsitered(!isRegsitered)}
 						className='font-medium text-indigo-600 hover:underline'>
-						{isSignUp ? 'Sign In' : 'Sign Up'}
+						<p>Sign Up</p>
 					</button>
 				</p>
 			</div>
