@@ -32,7 +32,6 @@ export default function HousesPage() {
 				{houses.map((house) => (
 					<Card
 						isHoverable
-						isPressable
 						key={house.id}
 						onPress={() => router.push(`/admin/houses/edit/${house.id}`)}
 						className='cursor-pointer'>

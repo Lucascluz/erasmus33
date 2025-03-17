@@ -1,11 +1,14 @@
+import { UUID } from "crypto";
+
 export interface House {
-	id: number;
+	id?: UUID;
 	street: string;
-	maps_link: string;
+	number: string;
+	postal_code: string;
+	description: string;
+	google_maps: string;
 	street_view: string;
 	total_rooms: number;
-	available_rooms: number[];
+	taken_rooms: number;
 	images: string[];
-	postal_code: string;
-	number: string;
 }

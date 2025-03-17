@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { User } from '@/interfaces/user';
+import { Select, SelectItem } from '@heroui/react';
+import { nationalities } from '@/lib/nationalities';
+import { languages } from '@/lib/languages';
 import {
 	Button,
 	CardFooter,
@@ -30,41 +33,36 @@ export default function ProfilePage() {
 	const router = useRouter();
 
 	const [user, setUser] = useState<User | null>(null);
-	const [userBackup, setUserBackup] = useState<User | null>(null);
 	const [pfpUrl, setPfpUrl] = useState<string | null>(null);
 	const [pfpFile, setPfpFile] = useState<File | null>(null);
+	const [password, setPassword] = useState('');
+	const [otherNationalityState, setOtherNationalityState] = useState(false);
+	const [passwordMatch, setPasswordMatch] = useState(true);
+
 	const [loading, setLoading] = useState(true);
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
+	const blankUser: User = {
+		first_name: '',
+		last_name: '',
+		phone_number: '',
+		pt_phone_number: '',
+		email: '',
+		profile_picture: '',
+		nationality: '',
+		preferred_language: '',
+		role: 'user',
+	};
+
 	useEffect(() => {
-		const fetchUser = async () => {
-			const { data: session, error: sessionError } =
-				await supabase.auth.getSession();
-			if (sessionError || !session.session) {
-				router.push('/auth/login');
-				return;
-			}
-			const { data, error } = await supabase
-				.from('users')
-				.select('*')
-				.eq('id', session.session.user.id)
-				.single();
-			if (error) {
-				console.error('Error fetching user:', error);
-			} else {
-				console.log('User:', data);
-				setUser(data);
-				setUserBackup(user);
-			}
-			setLoading(false);
-			setPfpUrl(data.profile_picture);
-		};
-		fetchUser();
+		setLoading(true);
+		setUser(blankUser);
+		setLoading(false);
 	}, [router]);
 
 	async function updateUi(file: File) {
-		if (!user || user == userBackup) {
-			console.log('User not found or no changes made');
+		if (!user) {
+			console.log('User not found');
 			return;
 		}
 		setIsModalOpen(false);
@@ -79,10 +77,21 @@ export default function ProfilePage() {
 		setPfpFile(file);
 	}
 
-	async function updateUserData(e: React.FormEvent) {
+	async function registerUser(e: React.FormEvent) {
 		e.preventDefault();
-		if (!user) return;
+		if (!user || !passwordMatch) return;
 		setLoading(true);
+
+		// Sign up user
+		const { error: signUpError } = await supabase.auth.signUp({
+			email: user.email,
+			password: password,
+		});
+		if (signUpError) {
+			console.error('Error signing up:', signUpError.message);
+			setLoading(false);
+			return;
+		}
 
 		// Upload profile picture
 		if (pfpFile) {
@@ -113,12 +122,12 @@ export default function ProfilePage() {
 			}
 
 			// Update user data
-			const { error: updError } = await supabase
-				.from('users')
-				.update(user)
-				.eq('id', user.id);
-			if (updError) console.error('Error updating user:', updError.message);
-			else console.log('User updated successfully');
+			const { error: updError } = await supabase.from('users').insert(user);
+			if (updError) console.error('Error inserting user:', updError.message);
+			else {
+				console.log('User inserted successfully');
+				router.push('/');
+			}
 			setLoading(false);
 		}
 	}
@@ -135,7 +144,7 @@ export default function ProfilePage() {
 	return (
 		<div className='container mx-auto py-6'>
 			<Card className='p-4'>
-				<form onSubmit={updateUserData} className='space-y-4'>
+				<form onSubmit={registerUser} className='space-y-4'>
 					<div className='grid grid-cols-6 gap-4 justify-between align-center'>
 						<div className='col-span-2 flex items-center justify-center'>
 							<Card
@@ -177,100 +186,109 @@ export default function ProfilePage() {
 						</div>
 						<div className='col-span-4'>
 							<div className='gap-4'>
+								<p>Credentials</p>
+								<Input
+									className='col-span-2 mb-6'
+									label='Email'
+									type='email'
+									value={user.email ?? ''}
+									onChange={(e) => setUser({ ...user, email: e.target.value })}
+								/>
+								<div className='grid grid-cols-2 gap-4'>
+									<Input
+										className='mb-6'
+										label='Password'
+										type='password'
+										onChange={(e) => setPassword(e.target.value)}
+									/>
+									<Input
+										className='mb-6'
+										label='Confirm Password'
+										type='password'
+										onChange={(e) => {
+											if (e.target.value === password) setPasswordMatch(true);
+											else setPasswordMatch(false);
+										}}
+									/>
+								</div>
+								{passwordMatch ? null : (
+									<p className='text-red-500'>Passwords do not match</p>
+								)}
 								<p className='m-2'>Personal Information</p>
 								<div className='grid grid-cols-2 gap-4'>
 									<Input
+										className='mb-6'
 										label='First Name'
 										type='text'
 										value={user.first_name ?? ''}
 										onChange={(e) => setUser({ ...user, first_name: e.target.value })}
 									/>
 									<Input
+										className='mb-6'
 										label='Last Name'
 										type='text'
 										value={user.last_name ?? ''}
 										onChange={(e) => setUser({ ...user, last_name: e.target.value })}
-										maxLength={5}
 									/>
 								</div>
 								<p className='m-2'>International Information</p>
 								<div className='grid grid-cols-2 gap-4'>
-									<Input
-										label='Nationality'
-										type='text'
-										value={user.nationality ?? ''}
-										onChange={(e) => setUser({ ...user, nationality: e.target.value })}
-									/>
-									<Input
-										label='Preferred Language'
-										type='text'
-										value={user.preferred_language ?? ''}
-										onChange={(e) =>
-											setUser({ ...user, preferred_language: e.target.value })
-										}
-									/>
+									<Select className='mb-6' label='Nationality'>
+										{Object.values(nationalities).map((nationality) => (
+											<SelectItem
+												key={nationality}
+												onPress={
+													nationality === 'Other'
+														? () => setOtherNationalityState(true)
+														: () => {
+																setUser({ ...user, nationality });
+																setOtherNationalityState(false);
+															}
+												}>
+												{nationality}
+											</SelectItem>
+										))}
+									</Select>
+									{otherNationalityState ? (
+										<Input
+											className='mb-6'
+											label='Other Nationality'
+											type='text'
+											onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+												setUser({ ...user, nationality: e.target.value })
+											}
+										/>
+									) : null}
+									<Select className='mb-6' label='Preferred Language'>
+										{Object.values(languages).map((language) => (
+											<SelectItem
+												key={language}
+												onPress={() => {
+													setUser({ ...user, preferred_language: language });
+												}}>
+												{language}
+											</SelectItem>
+										))}
+									</Select>
 								</div>
 								<p className='m-2'>Contact Information</p>
-								<div className='grid grid-cols-4 gap-4 mb-4'>
+								<div className='grid grid-cols-2 gap-4'>
 									<Input
-										label='Phone Number'
-										type='text'
+										label='Local Phone Number'
+										labelPlacement='inside'
+										type='phone'
+										placeholder='+XXX XXX XXX XXX'
 										value={user.phone_number ?? ''}
 										onChange={(e) => setUser({ ...user, phone_number: e.target.value })}
 									/>
 									<Input
 										label='PT Phone Number'
+										labelPlacement='inside'
 										type='text'
+										placeholder='+351 XXX XXX XXX'
 										value={user.pt_phone_number ?? ''}
 										onChange={(e) =>
 											setUser({ ...user, pt_phone_number: e.target.value })
-										}
-									/>
-									<Input
-										className='col-span-2'
-										label='Email'
-										type='email'
-										value={user.email ?? ''}
-										onChange={(e) => setUser({ ...user, email: e.target.value })}
-									/>
-								</div>
-								<p className='m-2'>Renting Information</p>
-								<div className='grid grid-cols-4 gap-4'>
-									<Input
-										label='Room Number'
-										type='text'
-										value={user.room_number ? user.room_number.toString() : '0'}
-										onChange={(e) =>
-											setUser({ ...user, room_number: parseInt(e.target.value, 10) || 0 })
-										}
-									/>
-									<Input
-										label='House Number'
-										type='text'
-										value={user.house_number ? user.house_number.toString() : '0'}
-										onChange={(e) =>
-											setUser({
-												...user,
-												house_number: parseInt(e.target.value, 10) || 0,
-											})
-										}
-									/>
-									<Input
-										label='Arrival Date'
-										type='date'
-										value={user.arrival_date ? user.arrival_date.toString() : ''}
-										onChange={(e) =>
-											setUser({ ...user, arrival_date: new Date(e.target.value) })
-										}
-									/>
-									<Input
-										label='Departure Estimate'
-										type='date'
-										value={
-											user.departure_estimate ? user.departure_estimate.toString() : ''
-										}
-										onChange={(e) =>
-											setUser({ ...user, departure_estimate: new Date(e.target.value) })
 										}
 									/>
 								</div>
@@ -280,11 +298,19 @@ export default function ProfilePage() {
 
 					<div className='flex justify-between'>
 						<Button variant='solid' type='submit' color='primary'>
-							Save Changes
+							Register
 						</Button>
 
-						<Button variant='bordered' onPress={handleSignOut}>
-							Log Out
+						<Button color='danger' onPress={() => router.push('/auth/login')}>
+							Cancel
+						</Button>
+
+						<Button
+							onPress={() => {
+								console.log('User:', user);
+								console.log('Password:', password);
+							}}>
+							Debug
 						</Button>
 					</div>
 				</form>

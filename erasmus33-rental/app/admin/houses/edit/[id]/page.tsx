@@ -8,6 +8,7 @@ import { Input } from '@heroui/input';
 import { Card, CardFooter } from '@heroui/card';
 import { House } from '@/interfaces/house';
 import { TrashIcon } from '@heroicons/react/24/solid';
+import { UUID } from 'crypto';
 
 export default function HouseEditPage() {
 	const router = useRouter();
@@ -34,7 +35,7 @@ export default function HouseEditPage() {
 		fetchHouse();
 	}, [id]);
 
-	async function uploadHouseImages(houseId: number, files: FileList) {
+	async function uploadHouseImages(houseId: UUID, files: FileList) {
 		if (!house) return;
 
 		const newUrls: string[] = [];
@@ -88,7 +89,7 @@ export default function HouseEditPage() {
 		}
 	}
 
-	async function deleteHouseImage(houseId: number, imageUrl: string) {
+	async function deleteHouseImage(houseId: UUID, imageUrl: string) {
 		if (!house) return;
 
 		// Optimistically update UI first
@@ -132,10 +133,10 @@ export default function HouseEditPage() {
 				street: updatedHouse.street,
 				number: updatedHouse.number,
 				postal_code: updatedHouse.postal_code,
-				maps_link: updatedHouse.maps_link,
+				google_maps: updatedHouse.google_maps,
 				street_view: updatedHouse.street_view,
 				total_rooms: updatedHouse.total_rooms,
-				available_rooms: updatedHouse.available_rooms,
+				taken_rooms: updatedHouse.taken_rooms,
 			})
 			.eq('id', house.id);
 
@@ -148,7 +149,7 @@ export default function HouseEditPage() {
 		setLoading(false);
 	};
 
-	const deleteHouse = async (id: number) => {
+	const deleteHouse = async (id: UUID) => {
 		setLoading(true);
 		// Delete house data from the database
 		console.log('Deleting house with ID:', id);
@@ -214,8 +215,8 @@ export default function HouseEditPage() {
 						<Input
 							label='Maps Link'
 							type='url'
-							value={house.maps_link ?? ''}
-							onChange={(e) => setHouse({ ...house, maps_link: e.target.value })}
+							value={house.google_maps ?? ''}
+							onChange={(e) => setHouse({ ...house, google_maps: e.target.value })}
 						/>
 						<Input
 							label='Street View Link'
@@ -225,28 +226,14 @@ export default function HouseEditPage() {
 						/>
 					</div>
 
-					<p>Rooms info</p>
-					<div className='grid grid-cols-2 gap-4'>
+					<p>Description</p>
+					<div>
 						<Input
-							label='Total Rooms'
-							type='number'
-							value={house.total_rooms ? house.total_rooms.toString() : '0'}
-							onChange={(e) =>
-								setHouse({ ...house, total_rooms: parseInt(e.target.value, 10) || 0 })
-							}
-						/>
-						<Input
-							label='Available Rooms'
+							size='lg'
+							label='Description'
 							type='text'
-							value={house.available_rooms ? house.available_rooms.join(', ') : ''}
-							onChange={(e) =>
-								setHouse({
-									...house,
-									available_rooms: e.target.value
-										.split(',')
-										.map((num) => parseInt(num, 10) || 0),
-								})
-							}
+							value={house.description ?? ''}
+							onChange={(e) => setHouse({ ...house, description: e.target.value })}
 						/>
 					</div>
 
@@ -267,7 +254,11 @@ export default function HouseEditPage() {
 							color={newImages ? 'success' : 'default'}
 							onPress={() => {
 								if (newImages) {
-									uploadHouseImages(house.id, newImages);
+									if (house.id) {
+										uploadHouseImages(house.id, newImages);
+									} else {
+										console.error('House ID is undefined');
+									}
 								}
 							}}
 							disabled={loading || !newImages}>
@@ -278,7 +269,7 @@ export default function HouseEditPage() {
 						{house.images?.length > 0 ? (
 							<div className='grid grid-cols-4 gap-3'>
 								{house.images.map((image, index) => (
-									<Card key={house.id + index} className='cursor-pointer'>
+									<Card key={(house.id ?? 'unknown') + index} className='cursor-pointer'>
 										{house.images.length > 0 ? (
 											<img
 												key={index}
@@ -296,7 +287,7 @@ export default function HouseEditPage() {
 												className='h-10'
 												variant='solid'
 												color='danger'
-												onPress={() => deleteHouseImage(house.id, image)}>
+												onPress={() => house.id && deleteHouseImage(house.id, image)}>
 												<TrashIcon className='h-5 w-5' />
 											</Button>
 										</CardFooter>
@@ -312,10 +303,10 @@ export default function HouseEditPage() {
 							Save Changes
 						</Button>
 
-						{house.maps_link ? (
+						{house.google_maps ? (
 							<Button
 								variant='bordered'
-								onPress={() => window.open(house.maps_link, '_blank')}>
+								onPress={() => window.open(house.google_maps, '_blank')}>
 								Open on Maps
 							</Button>
 						) : null}
@@ -330,7 +321,9 @@ export default function HouseEditPage() {
 							variant='solid'
 							color='danger'
 							onPress={() => {
-								deleteHouse(house.id);
+								{
+									house.id && deleteHouse(house.id);
+								}
 							}}>
 							Delete
 						</Button>

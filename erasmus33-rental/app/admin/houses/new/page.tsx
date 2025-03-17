@@ -22,16 +22,15 @@ export default function HouseCreatePage() {
 
 	// Create a blank house object
 	useEffect(() => {
-		// Incializa o objeto da casa vazio
 		setHouse({
-			id: 0,
+			description: '', // Add a default description
 			street: '',
 			number: '',
 			postal_code: '',
-			maps_link: '',
+			google_maps: '',
 			street_view: '',
 			total_rooms: 0,
-			available_rooms: [],
+			taken_rooms: 0,
 			images: [],
 		});
 
@@ -76,14 +75,13 @@ export default function HouseCreatePage() {
 				street: house.street,
 				number: house.number,
 				postal_code: house.postal_code,
-				maps_link: house.maps_link,
+				google_maps: house.google_maps,
 				street_view: house.street_view,
 				total_rooms: house.total_rooms,
-				available_rooms: house.available_rooms,
 			})
 			.select('id') // Select the ID of the new row
 			.single();
-		
+
 		const newHouseId = data ? data.id : null;
 
 		if (insError) {
@@ -92,8 +90,7 @@ export default function HouseCreatePage() {
 				insError.message,
 				insError.details
 			);
-		} else {
-			console.log('Row created successfully!');
+			return;
 		}
 
 		// Upload images to the storage bucket
@@ -112,22 +109,22 @@ export default function HouseCreatePage() {
 			}
 
 			// Get the public URL of the uploaded image
-			const { data: publicURL } = supabase.storage
+			const { data } = supabase.storage
 				.from('house_images')
 				.getPublicUrl(filePath);
 
 			// Insert the image URL in the database
-			if (publicURL) {
+			if (data) {
 				const { error: imgError } = await supabase
 					.from('houses')
-					.update({ images: [...house.images, publicURL] })
+					.update({ images: [...house.images, data.publicUrl] })
 					.eq('id', newHouseId);
 
 				if (imgError) {
 					console.error('Error updating image URL:', imgError.message);
 				} else {
-					console.log('Image uploaded successfully:', publicURL);
-					setHouse({ ...house, images: [...house.images, publicURL.publicUrl] });
+					console.log('Image uploaded successfully:', data);
+					setHouse({ ...house, images: [...house.images, data.publicUrl] });
 				}
 			}
 		}
@@ -178,8 +175,8 @@ export default function HouseCreatePage() {
 						<Input
 							label='Maps Link'
 							type='url'
-							value={house.maps_link ?? ''}
-							onChange={(e) => setHouse({ ...house, maps_link: e.target.value })}
+							value={house.google_maps ?? ''}
+							onChange={(e) => setHouse({ ...house, google_maps: e.target.value })}
 						/>
 						<Input
 							label='Street View Link'
@@ -189,30 +186,14 @@ export default function HouseCreatePage() {
 						/>
 					</div>
 
-					<p>Rooms info</p>
-					<div className='grid grid-cols-2 gap-4'>
+					<p>Description</p>
+					<div>
 						<Input
-							required
-							label='Number of Rooms'
-							type='number'
-							value={house.total_rooms ? house.total_rooms.toString() : '0'}
-							onChange={(e) =>
-								setHouse({ ...house, total_rooms: parseInt(e.target.value, 10) || 0 })
-							}
-						/>
-						<Input
-							required
-							label='Available Rooms'
+							size='lg'
+							label='Description'
 							type='text'
-							value={house.available_rooms ? house.available_rooms.join(', ') : ''}
-							onChange={(e) =>
-								setHouse({
-									...house,
-									available_rooms: e.target.value
-										.split(',')
-										.map((num) => parseInt(num, 10) || 0),
-								})
-							}
+							value={house.description ?? ''}
+							onChange={(e) => setHouse({ ...house, description: e.target.value })}
 						/>
 					</div>
 
@@ -235,7 +216,7 @@ export default function HouseCreatePage() {
 						{newImageUrls?.length > 0 ? (
 							<div className='grid grid-cols-4 gap-3'>
 								{newImageUrls.map((imageURL, index) => (
-									<Card key={house.id + index} className='cursor-pointer'>
+									<Card key={index} className='cursor-pointer'>
 										{newImageUrls.length > 0 ? (
 											<img
 												key={index}
@@ -269,10 +250,10 @@ export default function HouseCreatePage() {
 							Confirm Creation
 						</Button>
 
-						{house.maps_link ? (
+						{house.google_maps ? (
 							<Button
 								variant='bordered'
-								onPress={() => window.open(house.maps_link, '_blank')}>
+								onPress={() => window.open(house.google_maps, '_blank')}>
 								Open on Maps
 							</Button>
 						) : null}

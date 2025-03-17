@@ -5,12 +5,11 @@ import { supabase } from '@/lib/supabase';
 import { LockClosedIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation';
 
-export default function AuthPage() {
+export default function LoginPage() {
 	const router = useRouter();
 
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
-	const [isRegsitered, setIsRegsitered] = useState(false);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +26,6 @@ export default function AuthPage() {
 		if (spbError) {
 			setError(spbError.message);
 		} else {
-			setIsRegsitered(true);
 			router.refresh();
 			router.push('/'); // Redirect to home page
 		}
@@ -38,9 +36,7 @@ export default function AuthPage() {
 	return (
 		<div className='flex min-h-screen items-center justify-center'>
 			<div className='w-full max-w-md space-y-8 rounded-lg'>
-				<h2 className='text-center text-2xl font-bold'>
-					{isRegsitered ? 'Sign Up' : 'Sign In'}
-				</h2>
+				<h2 className='text-center text-2xl font-bold'>Login</h2>
 				{error && <p className='text-red-500 text-center'>{error}</p>}
 				<form className='space-y-4' onSubmit={handleLogin}>
 					<div>
@@ -75,15 +71,15 @@ export default function AuthPage() {
 						type='submit'
 						className='w-full rounded-md bg-indigo-600 py-2 text-white hover:bg-indigo-700'
 						disabled={loading}>
-						{loading ? 'Processing...' : isRegsitered ? 'Sign Up' : 'Sign In'}
+						Login
 					</button>
 				</form>
 				<p className='text-center text-sm text-gray-600'>
-					{isRegsitered ? 'Already have an account?' : "Don't have an account?"}{' '}
+					Don't have an account?{' '}
 					<button
-						onClick={() => setIsRegsitered(!isRegsitered)}
+						onClick={() => router.push('/auth/register')}
 						className='font-medium text-indigo-600 hover:underline'>
-						<p>Sign Up</p>
+						<p>Register</p>
 					</button>
 				</p>
 			</div>

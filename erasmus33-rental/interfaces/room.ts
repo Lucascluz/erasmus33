@@ -1,9 +1,14 @@
+import { UUID } from "crypto";
+
 export interface Room {
-	id: number;
-	house: number;
+	id?: UUID;
+	house_number: number;
+	number: number;
 	price: number;
 	description: string;
-	images: string[];
 	type: string;
 	beds_left: number;
+	renters: UUID[];
+	is_available: boolean;
+	images: string[];
 }
