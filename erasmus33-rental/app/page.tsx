@@ -8,7 +8,8 @@ export default function Home() {
 				isBlurred
 				radius='lg'
 				width='100%'
-				src='https://center-portugal.transforms.svdcdn.com/production/images/Guarda_2023-07-24-133040_zerj.jpg?w=1600&h=600&q=100&auto=format&fit=crop&dm=1691594136&s=1d359e62ba05d42e9b9e3c3213f3f037'></Image>
+				src='https://center-portugal.transforms.svdcdn.com/production/images/Guarda_2023-07-24-133040_zerj.jpg?w=1600&h=600&q=100&auto=format&fit=crop&dm=1691594136&s=1d359e62ba05d42e9b9e3c3213f3f037'
+			/>
 			<p className='text-2xl text-center px-30 py-10'>
 				Erasmus 33 already has a decade of experience in housing students from all
 				over the world, under the Erasmus + Programme. We are the best option for

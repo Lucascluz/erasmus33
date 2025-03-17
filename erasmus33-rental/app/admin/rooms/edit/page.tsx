@@ -8,6 +8,7 @@ import { Input } from '@heroui/input';
 import { Card, CardFooter } from '@heroui/card';
 import { Room } from '@/interfaces/room';
 import { TrashIcon } from '@heroicons/react/24/solid';
+import { UUID } from 'crypto';
 
 export default function RoomEditPage() {
 	const router = useRouter();
@@ -34,7 +35,7 @@ export default function RoomEditPage() {
 		fetchRoom();
 	}, [id]);
 
-	async function uploadRoomImages(roomId: number, files: FileList) {
+	async function uploadRoomImages(roomId: UUID, files: FileList) {
 		if (!room) return;
 
 		const newUrls: string[] = [];
@@ -88,7 +89,7 @@ export default function RoomEditPage() {
 		}
 	}
 
-	async function deleteRoomImage(roomId: number, imageUrl: string) {
+	async function deleteRoomImage(roomId: UUID, imageUrl: string) {
 		if (!room) return;
 
 		// Optimistically update UI first
@@ -135,8 +136,6 @@ export default function RoomEditPage() {
 				description: room.description,
 				beds_left: room.beds_left,
 				is_available: room.is_available,
-				availability_reason: room.availability_reason,
-				availability_start: room.availability_start,
 				images: room.images,
 			})
 			.eq('id', room.id);
@@ -150,7 +149,7 @@ export default function RoomEditPage() {
 		setLoading(false);
 	};
 
-	const deleteRoom = async (id: number) => {
+	const deleteRoom = async (id: string) => {
 		setLoading(true);
 		// Delete room data from the database
 		console.log('Deleting room with ID:', id);
@@ -217,21 +216,7 @@ export default function RoomEditPage() {
 							setRoom({ ...room, is_available: e.target.value === 'true' })
 						}
 					/>
-					`
-					{room.is_available && (
-						<Input
-							label='Availability Reason'
-							type='number'
-							value={room.availability_reason}
-							onChange={(e) =>
-								setRoom({
-									...room,
-									availability_reason: (parseInt(e.target.value, 10) || 0).toString(),
-								})
-							}
-						/>
-					)}
-					`
+
 					<Input
 						color='primary'
 						type='file'
@@ -247,7 +232,9 @@ export default function RoomEditPage() {
 						color={newImages ? 'success' : 'default'}
 						onPress={() => {
 							if (newImages) {
-								uploadRoomImages(room.id, newImages);
+								if (room.id) {
+									uploadRoomImages(room.id, newImages);
+								}
 							}
 						}}
 						disabled={loading || !newImages}>
@@ -255,7 +242,7 @@ export default function RoomEditPage() {
 					</Button>
 					{room.images?.length > 0
 						? room.images.map((image: string, index: number) => (
-								<Card key={room.id + index} className='cursor-pointer'>
+								<Card key={(room.id ?? 'unknown') + index} className='cursor-pointer'>
 									<img
 										key={index}
 										src={image}
@@ -267,7 +254,7 @@ export default function RoomEditPage() {
 											className='h-10'
 											variant='solid'
 											color='danger'
-											onPress={() => deleteRoomImage(room.id, image)}>
+											onPress={() => room.id && deleteRoomImage(room.id, image)}>
 											<TrashIcon className='h-5 w-5' />
 										</Button>
 									</CardFooter>
@@ -281,7 +268,9 @@ export default function RoomEditPage() {
 						variant='solid'
 						color='danger'
 						onPress={() => {
-							deleteRoom(room.id);
+							if (room.id) {
+								deleteRoom(room.id);
+							}
 						}}>
 						Delete
 					</Button>

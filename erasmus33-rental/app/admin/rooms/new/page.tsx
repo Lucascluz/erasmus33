@@ -215,7 +215,7 @@ export default function RoomCreatePage() {
 						placeholder='Select a user'
 						selectionMode='multiple'>
 						{users
-							.filter((user) => !room.renters?.includes(user.id))
+							.filter((user) => user.id && !room.renters?.includes(user.id))
 							.map((user) => (
 								<SelectItem key={user.id}>
 									{user.first_name + ' ' + user.last_name}
@@ -226,7 +226,7 @@ export default function RoomCreatePage() {
 					{room.renters?.length > 0 ? (
 						<div className='grid grid-cols-4 gap-3'>
 							{users
-								.filter((user) => room.renters?.includes(user.id))
+								.filter((user) => user.id && room.renters?.includes(user.id))
 								.map((user, index) => (
 									<UserComponent
 										avatarProps={{
@@ -264,7 +264,7 @@ export default function RoomCreatePage() {
 										<img
 											key={index}
 											src={imageURL}
-											alt={`House Image ${index}`}
+											alt={`House ${index}`}
 											className='w-full h-48 object-cover rounded'
 										/>
 									) : (
