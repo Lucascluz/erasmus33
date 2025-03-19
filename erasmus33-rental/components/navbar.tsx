@@ -44,7 +44,7 @@ export const Navbar = () => {
 				if (!error && data) {
 					setRole(data.role);
 				}
-			}
+			} else supabase.auth.signOut();
 		};
 
 		fetchUser();
@@ -92,6 +92,7 @@ export const Navbar = () => {
 					<NextLink className='flex justify-start items-center gap-4' href='/'>
 						<Avatar
 							className='w-12 h-12 text-large'
+							src='https://gkpotoixqcjijozesfee.supabase.co/storage/v1/object/public/assets//271729632_265800025651586_8565946951297877827_n.jpg'
 						/>
 						<p className='font-bold text-inherit text-xl'>Erasmus 33</p>
 					</NextLink>

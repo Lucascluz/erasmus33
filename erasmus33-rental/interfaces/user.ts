@@ -7,12 +7,12 @@ export interface User {
 	phone_number: string;
 	pt_phone_number: string;
 	email: string;
-	profile_picture: string;
+	profile_picture?: string;
 	nationality: string;
-	preferred_language: string;
+	preferred_language: string | 'pt' | 'en';
 	room_number?: number;
 	house_number?: number;
 	arrival_date?: Date;
 	departure_estimate?: Date;
-	role: string;
+	role: string | 'user';
 }

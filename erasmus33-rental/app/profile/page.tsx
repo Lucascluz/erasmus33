@@ -20,7 +20,7 @@ import {
 	CameraIcon,
 } from '@heroicons/react/24/solid';
 
-import ImageCropper from '@/components/imageCropper';
+import ImageCropper from '@/components/image-cropper';
 import 'react-image-crop/dist/ReactCrop.css';
 
 const fallbackPfp =
@@ -51,6 +51,7 @@ export default function ProfilePage() {
 				.single();
 			if (error) {
 				console.error('Error fetching user:', error);
+				handleSignOut();
 			} else {
 				console.log('User:', data);
 				setUser(data);
@@ -237,6 +238,7 @@ export default function ProfilePage() {
 										onChange={(e) => setUser({ ...user, email: e.target.value })}
 									/>
 								</div>
+
 								<p className='m-2'>Renting Information</p>
 								<div className='grid grid-cols-4 gap-4'>
 									<Input

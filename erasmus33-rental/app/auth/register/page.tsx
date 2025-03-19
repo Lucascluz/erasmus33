@@ -17,14 +17,10 @@ import {
 	ModalBody,
 	ModalContent,
 } from '@heroui/react';
-import {
-	ArrowDownIcon,
-	ArrowUpIcon,
-	CameraIcon,
-} from '@heroicons/react/24/solid';
 
-import ImageCropper from '@/components/imageCropper';
+import ImageCropper from '@/components/image-cropper';
 import 'react-image-crop/dist/ReactCrop.css';
+import { UUID } from 'crypto';
 
 const fallbackPfp =
 	'https://gkpotoixqcjijozesfee.supabase.co/storage/v1/object/public/profile_pictures/assets/user-placeholder.png';
@@ -48,7 +44,6 @@ export default function ProfilePage() {
 		phone_number: '',
 		pt_phone_number: '',
 		email: '',
-		profile_picture: '',
 		nationality: '',
 		preferred_language: '',
 		role: 'user',
@@ -77,65 +72,67 @@ export default function ProfilePage() {
 		setPfpFile(file);
 	}
 
-	async function registerUser(e: React.FormEvent) {
-		e.preventDefault();
+	async function handleRegister(e: React.FormEvent) {
 		if (!user || !passwordMatch) return;
-		setLoading(true);
+		e.preventDefault();
 
 		// Sign up user
-		const { error: signUpError } = await supabase.auth.signUp({
+		const { data: userData, error: signUpError } = await supabase.auth.signUp({
 			email: user.email,
 			password: password,
 		});
-		if (signUpError) {
-			console.error('Error signing up:', signUpError.message);
+		if (signUpError || !userData) {
+			console.error('Error signing up:', signUpError?.message);
 			setLoading(false);
+			return;
+		} else {
+			console.log('Confirmation email sent:', userData.user);
+		}
+		confirmRegsiter(userData.user?.id!);
+	}
+
+	function confirmRegsiter(id: string) {
+		if (!user || !pfpFile) {
+			console.log('User or pfpFile not found');
 			return;
 		}
 
 		// Upload profile picture
-		if (pfpFile) {
-			const { error: uplError } = await supabase.storage
-				.from('profile_pictures')
-				.upload(`public/${user.id}.png`, pfpFile, {
-					upsert: true,
-					contentType: pfpFile.type || 'image/png', // Usa o tipo real do arquivo
-				});
-			if (uplError) {
-				console.error('Error uploading profile picture:', uplError.message);
-			} else {
-				if (!pfpFile.type.startsWith('image/')) {
-					console.error('Invalid file type:', pfpFile.type);
+		const filePath = `public/${id}`;
+		supabase.storage
+			.from('profile_pictures')
+			.upload(filePath, pfpFile)
+			.then((response) => {
+				if (response.error) {
+					console.error('Error uploading profile picture:', response.error.message);
 					return;
 				}
-				console.log('Profile picture uploaded successfully');
-				// Retrieve new profile picture URL
-				const { data } = await supabase.storage
-					.from('profile_pictures')
-					.getPublicUrl(`public/${user.id}.png`);
-				if (!data) {
-					console.error('Error getting profile picture URL');
-				} else {
-					setUser({ ...user, profile_picture: data.publicUrl });
-					console.log('Profile picture URL:', user.profile_picture);
+				console.log('Profile picture uploaded:', response.data);
+			});
+
+		// Get the public URL of the uploaded image
+		const { data } = supabase.storage
+			.from('profile_pictures')
+			.getPublicUrl(filePath);
+
+		// Insert user data
+		supabase
+			.from('users')
+			.insert({
+				id: id as UUID,
+				...user,
+				profile_picture: data?.publicUrl,
+			})
+			.then((response) => {
+				if (response.error) {
+					console.error('Error inserting user data:', response.error.message);
+					return;
 				}
-			}
+				console.log('User data inserted:', response.data);
+			});
 
-			// Update user data
-			const { error: updError } = await supabase.from('users').insert(user);
-			if (updError) console.error('Error inserting user:', updError.message);
-			else {
-				console.log('User inserted successfully');
-				router.push('/');
-			}
-			setLoading(false);
-		}
-	}
-
-	function handleSignOut() {
-		supabase.auth.signOut();
-		setUser(null);
-		router.push('/auth/login');
+		setLoading(false);
+		router.push('/auth/register/success');
 	}
 
 	if (loading) return <div className='text-center p-4'>Loading...</div>;
@@ -144,11 +141,11 @@ export default function ProfilePage() {
 	return (
 		<div className='container mx-auto py-6'>
 			<Card className='p-4'>
-				<form onSubmit={registerUser} className='space-y-4'>
+				<form onSubmit={handleRegister} className='space-y-4'>
 					<div className='grid grid-cols-6 gap-4 justify-between align-center'>
 						<div className='col-span-2 flex items-center justify-center'>
 							<Card
-								isFooterBlurred
+								isBlurred
 								className='flex flex-col items-center border-none w-full'>
 								<Image
 									removeWrapper
@@ -157,19 +154,15 @@ export default function ProfilePage() {
 									src={pfpUrl || fallbackPfp}
 									fallbackSrc={fallbackPfp}
 								/>
-								<CardFooter className='flex justify-between w-full'>
+								<CardFooter className='flex justify-center w-full'>
 									<Button
+										color='primary'
+										variant='light'
 										about='Upload new Profile Picture'
 										onPress={() => {
 											setIsModalOpen(isModalOpen ? false : true);
 										}}>
-										<ArrowUpIcon />
-									</Button>
-									<Button about='Take a Picture'>
-										<CameraIcon />
-									</Button>
-									<Button about='Download Profile Picture'>
-										<ArrowDownIcon />
+										Upload New
 									</Button>
 									<Modal
 										isOpen={isModalOpen}
@@ -242,6 +235,7 @@ export default function ProfilePage() {
 														? () => setOtherNationalityState(true)
 														: () => {
 																setUser({ ...user, nationality });
+																console.log('User:', user);
 																setOtherNationalityState(false);
 															}
 												}>
@@ -297,7 +291,11 @@ export default function ProfilePage() {
 					</div>
 
 					<div className='flex justify-between'>
-						<Button variant='solid' type='submit' color='primary'>
+						<Button
+							variant='solid'
+							type='submit'
+							color='primary'
+							disabled={loading || !passwordMatch}>
 							Register
 						</Button>
 

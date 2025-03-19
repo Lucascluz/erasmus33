@@ -20,7 +20,7 @@ import {
 	CameraIcon,
 } from '@heroicons/react/24/solid';
 
-import ImageCropper from '@/components/imageCropper';
+import ImageCropper from '@/components/image-cropper';
 import 'react-image-crop/dist/ReactCrop.css';
 
 const fallbackPfp =
@@ -155,12 +155,6 @@ export default function ProfilePage() {
 											setIsModalOpen(isModalOpen ? false : true);
 										}}>
 										<ArrowUpIcon />
-									</Button>
-									<Button about='Take a Picture'>
-										<CameraIcon />
-									</Button>
-									<Button about='Download Profile Picture'>
-										<ArrowDownIcon />
 									</Button>
 									<Modal
 										isOpen={isModalOpen}
