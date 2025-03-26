@@ -1,14 +1,16 @@
 "use client";
 
+import { UUID } from "crypto";
+
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Card, CardFooter } from "@heroui/card";
-import { House } from "@/interfaces/house";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { UUID } from "crypto";
+
+import { House } from "@/interfaces/house";
+import { supabase } from "@/lib/supabase";
 
 export default function HouseEditPage() {
   const router = useRouter();
@@ -29,9 +31,11 @@ export default function HouseEditPage() {
         .select("*")
         .eq("id", id)
         .single();
+
       if (error) console.error("Error fetching house:", error);
       else setHouse(data);
     };
+
     fetchHouse();
   }, [id]);
 
@@ -44,6 +48,7 @@ export default function HouseEditPage() {
     // Optimistically update UI before upload finishes
     for (const file of Array.from(files)) {
       const tempUrl = URL.createObjectURL(file); // Create a temporary URL
+
       updatedImages.push(tempUrl); // Add to UI
     }
     setHouse({ ...house, images: updatedImages });
@@ -71,6 +76,7 @@ export default function HouseEditPage() {
 
     if (newUrls.length === 0) {
       console.error("No images successfully uploaded.");
+
       return;
     }
 
@@ -94,6 +100,7 @@ export default function HouseEditPage() {
 
     // Optimistically update UI first
     const updatedImages = house.images?.filter((img) => img !== imageUrl) || [];
+
     setHouse({ ...house, images: updatedImages });
 
     // Extract file path from URL
@@ -105,6 +112,7 @@ export default function HouseEditPage() {
 
     if (error) {
       console.error("Error deleting image:", error.message);
+
       return;
     }
 
@@ -161,14 +169,21 @@ export default function HouseEditPage() {
       .from("houses")
       .delete()
       .eq("id", id);
+
     if (dbError) {
       console.error("Error deleting house:", dbError);
     }
 
+    // Build filePath array for house images based on house.id and index
+    const filePaths = house?.images?.map(
+      (_, index) => `${house.id}/${index}`,
+    ) as string[];
+
     // Delete house images from the storage bucket
-    const { error: errorST } = await supabase.storage.deleteBucket(
-      `houses/${id}`,
-    );
+    const { error: errorST } = await supabase.storage
+      .from("house_images")
+      .remove(filePaths);
+
     if (errorST) {
       console.error("Error deleting house images:", errorST);
     }
@@ -182,7 +197,7 @@ export default function HouseEditPage() {
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold mb-4">
-          Editing House: {house.number} at {house.street}
+          House {house.number} at {house.street}
         </h1>
         <Button variant="bordered" onPress={() => router.push("/admin/houses")}>
           Back to Houses
@@ -190,7 +205,7 @@ export default function HouseEditPage() {
       </div>
 
       <Card className="p-4">
-        <form onSubmit={updateHouseData} className="space-y-4">
+        <form className="space-y-4" onSubmit={updateHouseData}>
           <p>Adress</p>
           <div className="grid grid-cols-3 gap-4">
             <Input
@@ -201,19 +216,19 @@ export default function HouseEditPage() {
             />
             <Input
               label="Number"
+              maxLength={5}
               type="text"
               value={house.number ?? ""}
               onChange={(e) => setHouse({ ...house, number: e.target.value })}
-              maxLength={5}
             />
             <Input
               label="Postal Code"
+              maxLength={7}
               type="text"
               value={house.postal_code ?? ""}
               onChange={(e) =>
                 setHouse({ ...house, postal_code: e.target.value })
               }
-              maxLength={7}
             />
           </div>
           <p>Google maps</p>
@@ -239,8 +254,8 @@ export default function HouseEditPage() {
           <p>Description</p>
           <div>
             <Input
-              size="lg"
               label="Description"
+              size="lg"
               type="text"
               value={house.description ?? ""}
               onChange={(e) =>
@@ -252,9 +267,9 @@ export default function HouseEditPage() {
           <p>Upload New Images</p>
           <div className="flex items-center space-x-4">
             <Input
+              multiple
               color="primary"
               type="file"
-              multiple
               onChange={(e) => {
                 if (e && e.target && e.target.files) {
                   setNewImages(e.target.files);
@@ -262,8 +277,9 @@ export default function HouseEditPage() {
               }}
             />
             <Button
-              variant="solid"
               color={newImages ? "success" : "default"}
+              disabled={loading || !newImages}
+              variant="solid"
               onPress={() => {
                 if (newImages) {
                   if (house.id) {
@@ -273,7 +289,6 @@ export default function HouseEditPage() {
                   }
                 }
               }}
-              disabled={loading || !newImages}
             >
               {loading ? "Uploading..." : "Upload Images"}
             </Button>
@@ -289,9 +304,9 @@ export default function HouseEditPage() {
                     {house.images.length > 0 ? (
                       <img
                         key={index}
-                        src={image}
                         alt={`House Image ${index}`}
                         className="w-full h-48 object-cover rounded"
+                        src={image}
                       />
                     ) : (
                       <div className="w-full h-48 flex justify-center items-center">
@@ -303,8 +318,8 @@ export default function HouseEditPage() {
                     <CardFooter className="flex justify-end">
                       <Button
                         className="h-10"
-                        variant="solid"
                         color="danger"
+                        variant="solid"
                         onPress={() =>
                           house.id && deleteHouseImage(house.id, image)
                         }
@@ -320,7 +335,7 @@ export default function HouseEditPage() {
             )}
           </div>
           <div className="flex justify-between">
-            <Button variant="solid" type="submit" color="primary">
+            <Button color="primary" type="submit" variant="solid">
               Save Changes
             </Button>
 
@@ -341,8 +356,8 @@ export default function HouseEditPage() {
               </Button>
             ) : null}
             <Button
-              variant="solid"
               color="danger"
+              variant="solid"
               onPress={() => {
                 {
                   house.id && deleteHouse(house.id);

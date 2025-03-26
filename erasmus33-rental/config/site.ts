@@ -13,10 +13,6 @@ export const siteConfig = {
       label: "Rooms",
       href: "/rooms",
     },
-    {
-      label: "About us",
-      href: "/about",
-    },
   ],
   navAdminItems: [
     {

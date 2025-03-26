@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Card, CardFooter } from "@heroui/card";
-import { Room } from "@/interfaces/room";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { User } from "@/interfaces/user";
 import { User as UserComponent } from "@heroui/user";
 import { Select, SelectItem } from "@heroui/react";
+
+import { User } from "@/interfaces/user";
+import { Room } from "@/interfaces/room";
+import { supabase } from "@/lib/supabase";
 import { House } from "@/interfaces/house";
 
 export default function RoomCreatePage() {
@@ -31,6 +32,7 @@ export default function RoomCreatePage() {
   useEffect(() => {
     const fetchUsers = async () => {
       const { data: users, error } = await supabase.from("users").select("*");
+
       if (error) {
         console.error("Error fetching users:", error.message);
       } else {
@@ -40,6 +42,7 @@ export default function RoomCreatePage() {
 
     const fetchHouses = async () => {
       const { data: houses, error } = await supabase.from("houses").select("*");
+
       if (error) {
         console.error("Error fetching houses:", error.message);
       } else {
@@ -74,6 +77,7 @@ export default function RoomCreatePage() {
   async function updateRoomImagesUI() {
     if (!newImageFiles || newImageFiles.length === 0) {
       console.error("No images selected to upload!");
+
       return;
     }
 
@@ -124,6 +128,7 @@ export default function RoomCreatePage() {
         insError.message,
         insError.details,
       );
+
       return;
     }
 
@@ -177,7 +182,7 @@ export default function RoomCreatePage() {
       </div>
 
       <Card className="p-4">
-        <form onSubmit={insertRoomData} className="space-y-4">
+        <form className="space-y-4" onSubmit={insertRoomData}>
           <div className="grid grid-cols-4 gap-3">
             <Select
               className="max-w-xs"
@@ -238,10 +243,9 @@ export default function RoomCreatePage() {
 
           <Select
             className="max-w-xs"
+            items={users}
             label="Add a renter"
             placeholder="Select a user"
-            selectionMode="multiple"
-            items={users}
             renderValue={(items) => {
               return (
                 <div className="flex flex-wrap gap-2">
@@ -257,17 +261,18 @@ export default function RoomCreatePage() {
                 </div>
               );
             }}
+            selectionMode="multiple"
           >
             {users
               .filter((user) => user.id && !room.renters?.includes(user.id))
               .map((user) => (
                 <SelectItem key={user.id}>
                   <UserComponent
-                    className="p-2"
                     key={user.id} // Add key prop here
                     avatarProps={{
                       src: `${user.profile_picture}`,
                     }}
+                    className="p-2"
                     name={user.first_name + " " + user.last_name}
                   />
                 </SelectItem>
@@ -295,12 +300,13 @@ export default function RoomCreatePage() {
           <p>Upload New Images</p>
           <div className="flex items-center space-x-4">
             <Input
+              multiple
               color="primary"
               type="file"
-              multiple
               onChange={(e) => {
                 if (e.target.files) {
                   const files = e.target.files; // Variável temporária
+
                   console.log("New images selected:", files);
                   setNewImageFiles(files);
                 }
@@ -315,9 +321,9 @@ export default function RoomCreatePage() {
                   {newImageUrls.length > 0 ? (
                     <img
                       key={index}
-                      src={imageURL}
                       alt={`House ${index}`}
                       className="w-full h-48 object-cover rounded"
+                      src={imageURL}
                     />
                   ) : (
                     <div className="w-full h-48 flex justify-center items-center">
@@ -327,8 +333,8 @@ export default function RoomCreatePage() {
                   <CardFooter className="flex justify-end">
                     <Button
                       className="h-10"
-                      variant="solid"
                       color="danger"
+                      variant="solid"
                       onPress={() => deleteRoomImageFromUI(imageURL)}
                     >
                       <TrashIcon className="h-5 w-5" />

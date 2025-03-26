@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { supabase } from "@/lib/supabase";
-
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
+
+import { supabase } from "@/lib/supabase";
 import { House } from "@/interfaces/house";
 
 export default function HouseViewPage() {
@@ -24,12 +24,14 @@ export default function HouseViewPage() {
         .select("*")
         .eq("id", id)
         .single();
+
       if (error) {
         console.error("Error fetching house:", error);
       } else {
         setHouse(data);
       }
     };
+
     fetchHouse();
   }, [id]);
 
@@ -52,8 +54,8 @@ export default function HouseViewPage() {
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label
-                htmlFor="street"
                 className="block text-sm font-medium text-gray-700"
+                htmlFor="street"
               >
                 Street
               </label>
@@ -61,8 +63,8 @@ export default function HouseViewPage() {
             </div>
             <div>
               <label
-                htmlFor="number"
                 className="block text-sm font-medium text-gray-700"
+                htmlFor="number"
               >
                 Number
               </label>
@@ -70,8 +72,8 @@ export default function HouseViewPage() {
             </div>
             <div>
               <label
-                htmlFor="postal-code"
                 className="block text-sm font-medium text-gray-700"
+                htmlFor="postal-code"
               >
                 Postal Code
               </label>
@@ -82,8 +84,8 @@ export default function HouseViewPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label
-                htmlFor="maps-link"
                 className="block text-sm font-medium text-gray-700"
+                htmlFor="maps-link"
               >
                 Maps Link
               </label>
@@ -91,8 +93,8 @@ export default function HouseViewPage() {
             </div>
             <div>
               <label
-                htmlFor="street-view"
                 className="block text-sm font-medium text-gray-700"
+                htmlFor="street-view"
               >
                 Street View Link
               </label>
@@ -116,11 +118,11 @@ export default function HouseViewPage() {
                   >
                     <Image
                       key={index}
-                      src={image}
                       alt={`House ${index}`}
-                      width={300}
-                      height={200}
                       className="w-full h-48 object-cover rounded"
+                      height={200}
+                      src={image}
+                      width={300}
                     />
                   </Card>
                 ))}

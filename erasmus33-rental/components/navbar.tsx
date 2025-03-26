@@ -4,11 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import NextLink from "next/link";
 import clsx from "clsx";
-import { User as SbUser } from "@supabase/supabase-js";
-import { User as IfUser } from "@/interfaces/user";
-import { supabase } from "@/lib/supabase";
-import { siteConfig } from "@/config/site";
-import { ThemeSwitch } from "@/components/theme-switch";
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
@@ -18,7 +13,6 @@ import {
   NavbarMenuItem,
   NavbarMenuToggle,
 } from "@heroui/navbar";
-import { Link } from "@heroui/link";
 import { link as linkStyles } from "@heroui/theme";
 import { Avatar } from "@heroui/avatar";
 import { Button } from "@heroui/button";
@@ -29,6 +23,11 @@ import {
   DropdownTrigger,
 } from "@heroui/react";
 import { User } from "@heroui/user";
+
+import { ThemeSwitch } from "@/components/theme-switch";
+import { siteConfig } from "@/config/site";
+import { User as IfUser } from "@/interfaces/user";
+import { supabase } from "@/lib/supabase";
 
 export const Navbar = () => {
   const router = useRouter();
@@ -84,10 +83,11 @@ export const Navbar = () => {
 
   return (
     <HeroUINavbar
+      isBordered
+      isBlurred
+      isMenuOpen={isMenuOpen}
       maxWidth="xl"
       position="sticky"
-      isMenuOpen={isMenuOpen}
-      isBordered
     >
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarMenuToggle
@@ -131,7 +131,7 @@ export const Navbar = () => {
       <NavbarContent
         className="hidden sm:flex basis-1/5 sm:basis-full"
         justify="end"
-      ></NavbarContent>
+      />
 
       <NavbarItem>
         {user ? (
@@ -144,8 +144,8 @@ export const Navbar = () => {
                   fallback:
                     "https://gkpotoixqcjijozesfee.supabase.co/storage/v1/object/public/profile_pictures/assets/user-placeholder.png",
                 }}
-                name={user.first_name}
                 description={user.email}
+                name={user.first_name}
               />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
@@ -171,8 +171,8 @@ export const Navbar = () => {
         ) : (
           <Button
             as={NextLink}
-            href="/auth/login/"
             color="primary"
+            href="/auth/login/"
             variant="solid"
           >
             Login

@@ -1,0 +1,15 @@
+export const countries = {
+  us: "United States",
+  an: "Angola",
+  br: "Brazil",
+  uk: "England",
+  gr: "Greece",
+  it: "Italy",
+  mx: "Mexico",
+  ni: "Nigeria",
+  pt: "Portugal",
+  es: "Spain",
+  tk: "Turkey",
+  vn: "Vietnam",
+  other: "Other",
+};

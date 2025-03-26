@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { LockClosedIcon, EnvelopeIcon } from "@heroicons/react/24/solid";
+
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,37 +41,37 @@ export default function LoginPage() {
         {error && <p className="text-center text-red-500">{error}</p>}
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium">
+            <label className="block text-sm font-medium" htmlFor="email">
               Email
             </label>
             <div className="relative mt-1">
               <EnvelopeIcon className="absolute left-3 top-2.5 h-5 w-5" />
               <input
+                required
                 className="w-full rounded-md border border-gray-300 p-2 pl-10 focus:border-indigo-500 focus:ring-indigo-500"
                 id="email"
-                onChange={(e) => setEmail(e.target.value)}
-                required
                 type="email"
                 value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>
           <div>
             <label
-              htmlFor="password"
               className="block text-sm font-medium text-gray-700"
+              htmlFor="password"
             >
               Password
             </label>
             <div className="relative mt-1">
               <LockClosedIcon className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               <input
+                required
                 className="w-full rounded-md border border-gray-300 p-2 pl-10 focus:border-indigo-500 focus:ring-indigo-500"
                 id="password"
-                onChange={(e) => setPassword(e.target.value)}
-                required
                 type="password"
                 value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
           </div>

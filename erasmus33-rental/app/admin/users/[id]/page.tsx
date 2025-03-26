@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { User } from "@/interfaces/user";
 import { Image, Input, Card } from "@heroui/react";
 
+import { supabase } from "@/lib/supabase";
+import { User } from "@/interfaces/user";
+
 import "react-image-crop/dist/ReactCrop.css";
+import { Button } from "@heroui/button";
 
 const fallbackPfp =
   "https://gkpotoixqcjijozesfee.supabase.co/storage/v1/object/public/profile_pictures/assets/user-placeholder.png";
@@ -25,6 +27,7 @@ export default function ProfilePage() {
         .select("*")
         .eq("id", id)
         .single();
+
       if (error) {
         console.error("Error fetching user:", error);
       } else {
@@ -33,6 +36,7 @@ export default function ProfilePage() {
       }
       setLoading(false);
     };
+
     fetchUser();
   }, [router]);
 
@@ -40,7 +44,12 @@ export default function ProfilePage() {
   if (!user) return <div className="text-center p-4">User not found.</div>;
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto">
+      <div className="flex justify-end mb-4">
+        <Button variant="bordered" onPress={() => router.push("/admin/houses")}>
+          Back to Houses
+        </Button>
+      </div>
       <Card className="p-4">
         <div className="grid grid-cols-6 gap-4 justify-between align-center">
           <div className="col-span-2 flex items-center justify-center">
@@ -52,8 +61,8 @@ export default function ProfilePage() {
                 removeWrapper
                 alt="Card example background"
                 className="object-cover "
-                src={user.profile_picture || fallbackPfp}
                 fallbackSrc={fallbackPfp}
+                src={user.profile_picture || fallbackPfp}
               />
             </Card>
           </div>
@@ -71,12 +80,12 @@ export default function ProfilePage() {
                 />
                 <Input
                   label="Last Name"
+                  maxLength={5}
                   type="text"
                   value={user.last_name ?? ""}
                   onChange={(e) =>
                     setUser({ ...user, last_name: e.target.value })
                   }
-                  maxLength={5}
                 />
               </div>
               <p className="m-2">International Information</p>
@@ -84,9 +93,9 @@ export default function ProfilePage() {
                 <Input
                   label="Nationality"
                   type="text"
-                  value={user.nationality ?? ""}
+                  value={user.country ?? ""}
                   onChange={(e) =>
-                    setUser({ ...user, nationality: e.target.value })
+                    setUser({ ...user, country: e.target.value })
                   }
                 />
                 <Input

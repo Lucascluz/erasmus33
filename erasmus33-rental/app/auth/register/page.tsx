@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { User } from "@/interfaces/user";
 import { Select, SelectItem } from "@heroui/react";
-import { nationalities } from "@/lib/nationalities";
-import { languages } from "@/lib/languages";
 import {
   Button,
   CardFooter,
@@ -18,7 +14,12 @@ import {
   ModalContent,
 } from "@heroui/react";
 
+import { supabase } from "@/lib/supabase";
+import { User } from "@/interfaces/user";
+import { nationalities } from "@/lib/countries";
+import { languages } from "@/lib/languages";
 import ImageCropper from "@/components/image-cropper";
+
 import "react-image-crop/dist/ReactCrop.css";
 import { UUID } from "crypto";
 
@@ -58,12 +59,14 @@ export default function ProfilePage() {
   async function updateUi(file: File) {
     if (!user) {
       console.log("User not found");
+
       return;
     }
     setIsModalOpen(false);
 
     // Create a temporary URL for immediate UI update
     const tempUrl = URL.createObjectURL(file);
+
     console.log("Create a temporary URL for immediate UI update", tempUrl);
 
     // Optimistically update UI
@@ -81,9 +84,11 @@ export default function ProfilePage() {
       email: user.email,
       password: password,
     });
+
     if (signUpError || !userData) {
       console.error("Error signing up:", signUpError?.message);
       setLoading(false);
+
       return;
     } else {
       console.log("Confirmation email sent:", userData.user);
@@ -94,11 +99,13 @@ export default function ProfilePage() {
   function confirmRegsiter(id: string) {
     if (!user || !pfpFile) {
       console.log("User or pfpFile not found");
+
       return;
     }
 
     // Upload profile picture
     const filePath = `public/${id}`;
+
     supabase.storage
       .from("profile_pictures")
       .upload(filePath, pfpFile)
@@ -108,6 +115,7 @@ export default function ProfilePage() {
             "Error uploading profile picture:",
             response.error.message,
           );
+
           return;
         }
         console.log("Profile picture uploaded:", response.data);
@@ -129,6 +137,7 @@ export default function ProfilePage() {
       .then((response) => {
         if (response.error) {
           console.error("Error inserting user data:", response.error.message);
+
           return;
         }
         console.log("User data inserted:", response.data);
@@ -144,7 +153,7 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto py-6">
       <Card className="p-4">
-        <form onSubmit={handleRegister} className="space-y-4">
+        <form className="space-y-4" onSubmit={handleRegister}>
           <div className="grid grid-cols-6 gap-4 justify-between align-center">
             <div className="col-span-2 flex items-center justify-center">
               <Card
@@ -155,14 +164,14 @@ export default function ProfilePage() {
                   removeWrapper
                   alt="Card example background"
                   className="object-cover "
-                  src={pfpUrl || fallbackPfp}
                   fallbackSrc={fallbackPfp}
+                  src={pfpUrl || fallbackPfp}
                 />
                 <CardFooter className="flex justify-center w-full">
                   <Button
+                    about="Upload new Profile Picture"
                     color="primary"
                     variant="light"
-                    about="Upload new Profile Picture"
                     onPress={() => {
                       setIsModalOpen(isModalOpen ? false : true);
                     }}
@@ -171,8 +180,8 @@ export default function ProfilePage() {
                   </Button>
                   <Modal
                     isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
                     size="lg"
+                    onClose={() => setIsModalOpen(false)}
                   >
                     <ModalContent>
                       <ModalBody>
@@ -282,8 +291,8 @@ export default function ProfilePage() {
                   <Input
                     label="Local Phone Number"
                     labelPlacement="inside"
-                    type="phone"
                     placeholder="+XXX XXX XXX XXX"
+                    type="phone"
                     value={user.phone_number ?? ""}
                     onChange={(e) =>
                       setUser({ ...user, phone_number: e.target.value })
@@ -292,8 +301,8 @@ export default function ProfilePage() {
                   <Input
                     label="PT Phone Number"
                     labelPlacement="inside"
-                    type="text"
                     placeholder="+351 XXX XXX XXX"
+                    type="text"
                     value={user.pt_phone_number ?? ""}
                     onChange={(e) =>
                       setUser({ ...user, pt_phone_number: e.target.value })
@@ -306,10 +315,10 @@ export default function ProfilePage() {
 
           <div className="flex justify-between">
             <Button
-              variant="solid"
-              type="submit"
               color="primary"
               disabled={loading || !passwordMatch}
+              type="submit"
+              variant="solid"
             >
               Register
             </Button>

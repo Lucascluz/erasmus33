@@ -7,8 +7,8 @@ export default function Home() {
       <Image
         isBlurred
         radius="lg"
-        width="100%"
         src="https://gkpotoixqcjijozesfee.supabase.co/storage/v1/object/public/assets//Captura%20de%20tela_19-3-2025_172851_center-portugal.transforms.svdcdn.com.jpeg"
+        width="100%"
       />
       <p className="text-2xl text-center px-30 py-10">
         Erasmus 33 already has a decade of experience in housing students from

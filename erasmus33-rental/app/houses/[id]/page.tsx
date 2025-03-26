@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
-import { Card } from "@heroui/card";
+import { Card, CardFooter } from "@heroui/card";
+import { Image } from "@heroui/image";
+
 import { supabase } from "@/lib/supabase";
 import { House } from "@/interfaces/house";
-import { Image } from "@heroui/image";
 
 export default function HouseViewPage() {
   const router = useRouter();
@@ -26,106 +27,105 @@ export default function HouseViewPage() {
         .select("*")
         .eq("id", id)
         .single();
+
       if (error) {
         console.error("Error fetching house:", error);
       } else {
         setHouse(data);
-        setImageDisplay(data?.images[1] ?? "");
+        setImageDisplay(data?.images[0] ?? "");
       }
     };
+
     fetchHouse();
   }, [id]);
 
   if (!house) return <div>Loading...</div>;
 
   return (
-    <div className="container mx-auto py-6">
+    <div className="mx-auto pb-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">
-          House {house.number}
-        </h1>
-        <Button onPress={() => router.push("/houses")} variant="bordered">
+        <h1 className="text-2xl font-bold">House {house.number}</h1>
+        <Button variant="bordered" onPress={() => router.push("/houses")}>
           Back to Houses
         </Button>
       </div>
 
-      <Card className="p-4">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 justify-between align-center">
-            <Image
-              className="w-full h-48 object-cover rounded"
-              height={480}
-              src={imageDisplay}
-              width={960}
-            />
-            {house.images?.length > 0 ? (
-              <div className="grid grid-cols-6 gap-3 ">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2">
+          <Card className="py-4">
+            <div className="w-full aspect-w-16 aspect-h-9">
+              <Image className="object-cover rounded px-4" src={imageDisplay} />
+            </div>
+            {house.images?.length > 0 && (
+              <CardFooter className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
                 {house.images.map((image, index) => (
                   <Card
-                    className="p-2 justify-center"
+                    key={(house.id ?? "unknown") + index}
                     isHoverable
                     isPressable
+                    className="p-2"
                     onPress={() => setImageDisplay(image)}
-                    key={(house.id ?? "unknown") + index}
                   >
                     <Image
-                      className="w-full h-auto object-cover rounded"
+                      width={160}
+                      height={90}
                       alt={`House ${index}`}
+                      className="w-full h-auto object-cover rounded"
                       src={image}
                     />
                   </Card>
                 ))}
-              </div>
-            ) : (
-              <p>No images related to this house</p>
+              </CardFooter>
             )}
-          </div>
-          <p>Address</p>
-          <div className="grid grid-cols-3 gap-4">
+          </Card>
+        </div>
+
+        <div className="space-y-4">
+          <Card className="p-4">
             <div>
-              <span className="block text-sm font-medium text-gray-700">
-                Street
-              </span>
+              <p className="text-lg font-semibold">Description</p>
+              <p className="px-4">{house.description}</p>
+            </div>
+          </Card>
+
+          <Card className="p-4">
+            <p className="text-lg font-semibold">Address</p>
+            <div className="p-2">
+              <span className="text-sm font-medium text-gray-700">Street</span>
               <p>{house.street}</p>
             </div>
-            <div>
-              <span className="block text-sm font-medium text-gray-700">
-                Number
-              </span>
+            <div className="p-2">
+              <span className="text-sm font-medium text-gray-700">Number</span>
               <p>{house.number}</p>
             </div>
-            <div>
-              <span className="block text-sm font-medium text-gray-700">
+            <div className="p-2">
+              <span className="text-sm font-medium text-gray-700">
                 Postal Code
               </span>
               <p>{house.postal_code}</p>
             </div>
-          </div>
+          </Card>
 
-          <div>
-            <p>{house.description}</p>
-          </div>
-
-          <div className="flex justify-between">
-            {house.google_maps ? (
+          <div className="flex flex-col space-y-2">
+            {house.google_maps && (
               <Button
-                onPress={() => window.open(house.google_maps, "_blank")}
                 variant="bordered"
+                onPress={() => window.open(house.google_maps, "_blank")}
               >
                 Open on Maps
               </Button>
-            ) : null}
-            {house.street_view ? (
+            )}
+            {house.street_view && (
               <Button
-                onPress={() => window.open(house.street_view, "_blank")}
                 variant="bordered"
+                onPress={() => window.open(house.street_view, "_blank")}
               >
                 Open on Street View
               </Button>
-            ) : null}
+            )}
           </div>
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

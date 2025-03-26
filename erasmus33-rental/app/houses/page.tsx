@@ -2,24 +2,30 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Card, CardHeader } from "@heroui/card";
+import Image from "next/image";
+
 import { supabase } from "@/lib/supabase";
-import { Button } from "@heroui/button";
-import Link from "next/link";
-import { Card, CardFooter, CardHeader } from "@heroui/card";
 import { House } from "@/interfaces/house";
 
-export default function HousesPage() {
+export default function AdminHousesPage() {
   const [houses, setHouses] = useState<House[]>([]);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchHouses = async () => {
+    const fetchHouses = async (): Promise<void> => {
       const { data, error } = await supabase.from("houses").select("*");
-      if (error) console.error("Error fetching houses:", error);
-      else setHouses(data);
+
+      if (error) {
+        console.error("Error fetching houses:", error);
+      } else {
+        setHouses(data);
+      }
       console.log(data);
     };
+
     fetchHouses();
+    console.log(houses);
   }, []);
 
   return (
@@ -28,18 +34,19 @@ export default function HousesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
         {houses.map((house) => (
           <Card
+            key={house.id}
             isHoverable
             isPressable
-            key={house.id}
-            onPress={() => router.push(`/houses/${house.id}`)}
             className="cursor-pointer"
+            onPress={() => router.push(`/houses/${house.id}`)}
           >
             <CardHeader>House {house.number}</CardHeader>
-            {house.images.length > 0 ? (
-              <img
-                src={house.images[0]}
+            {house.images && house.images.length > 0 ? (
+              <Image
                 alt={house.street}
                 className="w-full h-48 object-cover"
+                src={house.images[0]}
+                layout="fill"
               />
             ) : (
               <div className="w-full h-48 flex justify-center items-center">

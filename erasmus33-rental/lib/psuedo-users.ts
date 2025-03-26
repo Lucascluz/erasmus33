@@ -1,5 +1,6 @@
+import { UUID } from "crypto";
+
 import { User } from "@/interfaces/user";
-import { randomUUID, UUID } from "crypto";
 
 export const pseudoUsers: User[] = [
   {

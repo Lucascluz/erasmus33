@@ -1,14 +1,16 @@
 "use client";
 
+import { UUID } from "crypto";
+
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Card, CardFooter } from "@heroui/card";
-import { Room } from "@/interfaces/room";
 import { TrashIcon } from "@heroicons/react/24/solid";
-import { UUID } from "crypto";
+
+import { Room } from "@/interfaces/room";
+import { supabase } from "@/lib/supabase";
 
 export default function RoomEditPage() {
   const router = useRouter();
@@ -29,9 +31,11 @@ export default function RoomEditPage() {
         .select("*")
         .eq("id", id)
         .single();
+
       if (error) console.error("Error fetching room:", error);
       else setRoom(data);
     };
+
     fetchRoom();
   }, [id]);
 
@@ -44,6 +48,7 @@ export default function RoomEditPage() {
     // Optimistically update UI before upload finishes
     for (const file of Array.from(files)) {
       const tempUrl = URL.createObjectURL(file); // Create a temporary URL
+
       updatedImages.push(tempUrl); // Add to UI
     }
     setRoom({ ...room, images: updatedImages });
@@ -71,6 +76,7 @@ export default function RoomEditPage() {
 
     if (newUrls.length === 0) {
       console.error("No images successfully uploaded.");
+
       return;
     }
 
@@ -94,6 +100,7 @@ export default function RoomEditPage() {
 
     // Optimistically update UI first
     const updatedImages = room.images?.filter((img) => img !== imageUrl) || [];
+
     setRoom({ ...room, images: updatedImages });
 
     // Extract file path from URL
@@ -105,6 +112,7 @@ export default function RoomEditPage() {
 
     if (error) {
       console.error("Error deleting image:", error.message);
+
       return;
     }
 
@@ -157,6 +165,7 @@ export default function RoomEditPage() {
       .from("rooms")
       .delete()
       .eq("id", id);
+
     if (dbError) {
       console.error("Error deleting room:", dbError);
     }
@@ -165,6 +174,7 @@ export default function RoomEditPage() {
     const { error: errorST } = await supabase.storage.deleteBucket(
       `rooms/${id}`,
     );
+
     if (errorST) {
       console.error("Error deleting room images:", errorST);
     }
@@ -186,7 +196,7 @@ export default function RoomEditPage() {
       </div>
 
       <Card className="p-4">
-        <form onSubmit={updateRoomData} className="space-y-4">
+        <form className="space-y-4" onSubmit={updateRoomData}>
           <Input
             label="Price"
             type="text"
@@ -225,9 +235,9 @@ export default function RoomEditPage() {
           />
 
           <Input
+            multiple
             color="primary"
             type="file"
-            multiple
             onChange={(e) => {
               if (e && e.target && e.target.files) {
                 setNewImages(e.target.files);
@@ -235,8 +245,9 @@ export default function RoomEditPage() {
             }}
           />
           <Button
-            variant="solid"
             color={newImages ? "success" : "default"}
+            disabled={loading || !newImages}
+            variant="solid"
             onPress={() => {
               if (newImages) {
                 if (room.id) {
@@ -244,7 +255,6 @@ export default function RoomEditPage() {
                 }
               }
             }}
-            disabled={loading || !newImages}
           >
             {loading ? "Uploading..." : "Upload Images"}
           </Button>
@@ -256,15 +266,15 @@ export default function RoomEditPage() {
                 >
                   <img
                     key={index}
-                    src={image}
                     alt={`Room Image ${index}`}
                     className="w-full h-48 object-cover rounded"
+                    src={image}
                   />
                   <CardFooter className="flex justify-end">
                     <Button
                       className="h-10"
-                      variant="solid"
                       color="danger"
+                      variant="solid"
                       onPress={() => room.id && deleteRoomImage(room.id, image)}
                     >
                       <TrashIcon className="h-5 w-5" />
@@ -273,12 +283,12 @@ export default function RoomEditPage() {
                 </Card>
               ))
             : null}
-          <Button variant="solid" type="submit" color="primary">
+          <Button color="primary" type="submit" variant="solid">
             Save Changes
           </Button>
           <Button
-            variant="solid"
             color="danger"
+            variant="solid"
             onPress={() => {
               if (room.id) {
                 deleteRoom(room.id);

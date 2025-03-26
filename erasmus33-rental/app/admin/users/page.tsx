@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Key, useEffect, useState } from "react";
+import React, { Key, useEffect, useState, useMemo, useCallback } from "react";
 import { Icon } from "@iconify/react";
 import {
   Table,
@@ -20,8 +20,8 @@ import {
   Pagination,
   Spinner,
 } from "@heroui/react";
-import { pseudoUsers } from "@/lib/psuedo-users";
 import { useRouter } from "next/navigation";
+
 import { supabase } from "@/lib/supabase";
 import { User } from "@/interfaces/user";
 
@@ -29,7 +29,7 @@ export const columns = [
   { name: "NAME", uid: "name" },
   { name: "CONTACT", uid: "contact" },
   { name: "HOUSE", uid: "house" },
-  { name: "NATIONALITY", uid: "nationality" },
+  { name: "COUNTRY", uid: "country" },
   { name: "LANGUAGE", uid: "language" },
   { name: "STAY", uid: "stay" },
   { name: "ROLE", uid: "role" },
@@ -45,44 +45,37 @@ const INITIAL_VISIBLE_COLUMNS = ["name", "contact", "room", "role", "actions"];
 export default function App() {
   const router = useRouter();
 
-  // Add a loading state to prevent hydration issues
   const [isLoading, setIsLoading] = useState(true);
   const [users, setUsers] = useState<User[]>([]);
-
-  const [filterValue, setFilterValue] = React.useState("");
-  const [visibleColumns, setVisibleColumns] = React.useState(
+  const [filterValue, setFilterValue] = useState("");
+  const [visibleColumns, setVisibleColumns] = useState(
     new Set(INITIAL_VISIBLE_COLUMNS),
   );
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [page, setPage] = React.useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [page, setPage] = useState(1);
 
-  // Initialize data on the client-side only to avoid hydration mismatch
   useEffect(() => {
-    const fetchData = async () => {
-      const { data: sessionUserData } = await supabase.auth.getUser();
-      const fetchUsers = async () => {
-        const { data, error } = await supabase.from("users").select("*");
-        // .neq("id", sessionUserData.user?.id);
-        if (error) console.error("Error fetching users:", error);
-        else setUsers(data);
-        console.log(data);
-      };
-      fetchUsers();
+    const fetchUsers = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase.from("users").select("*");
+
+      if (error) console.error("Error fetching users:", error);
+      else setUsers(data);
       setIsLoading(false);
     };
-    fetchData();
+
+    fetchUsers();
   }, []);
 
   const hasSearchFilter = Boolean(filterValue);
 
-  const headerColumns = React.useMemo(() => {
+  const headerColumns = useMemo(() => {
     if (visibleColumns.size === columns.length) return columns;
-    return columns.filter((column) =>
-      Array.from(visibleColumns).includes(column.uid),
-    );
+
+    return columns.filter((column) => visibleColumns.has(column.uid));
   }, [visibleColumns]);
 
-  const filteredItems = React.useMemo(() => {
+  const filteredItems = useMemo(() => {
     let filteredUsers = [...users];
 
     if (hasSearchFilter) {
@@ -94,145 +87,142 @@ export default function App() {
     }
 
     return filteredUsers;
-  }, [users, filterValue]);
+  }, [users, filterValue, hasSearchFilter]);
 
   const pages = Math.ceil(filteredItems.length / rowsPerPage);
 
-  const items = React.useMemo(() => {
+  const items = useMemo(() => {
     const start = (page - 1) * rowsPerPage;
     const end = start + rowsPerPage;
+
     return filteredItems.slice(start, end);
   }, [page, filteredItems, rowsPerPage]);
 
-  function getSortValue(user: User, column: string) {
-    switch (column) {
-      case "name":
-        return `${user.first_name} ${user.last_name}`;
-      case "room":
-        return user.room_number || 0;
-      default:
-        return user[column as keyof User] || "";
-    }
-  }
+  const renderCell = useCallback(
+    (user: User, columnKey: Key) => {
+      switch (columnKey) {
+        case "name":
+          return (
+            <UserComponent
+              avatarProps={{ radius: "lg", src: user.profile_picture }}
+              description={user.email}
+              name={`${user.first_name} ${user.last_name}`}
+            >
+              {user.email}
+            </UserComponent>
+          );
+        case "contact":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small">{user.phone_number}</p>
+              <p className="text-bold text-tiny text-default-400">
+                {user.pt_phone_number}
+              </p>
+            </div>
+          );
+        case "house":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small">House {user.house_number}</p>
+              <p className="text-bold text-tiny text-default-400">
+                Room {user.room_number}
+              </p>
+            </div>
+          );
+        case "country":
+          return <span className="capitalize">{user.country}</span>;
+        case "language":
+          return (
+            <Chip
+              className="capitalize"
+              color={user.preferred_language === "pt" ? "primary" : "secondary"}
+              size="sm"
+              variant="flat"
+            >
+              {user.preferred_language}
+            </Chip>
+          );
+        case "stay":
+          return (
+            <div className="flex flex-col">
+              <p className="text-bold text-small">
+                {user.arrival_date
+                  ? new Date(user.arrival_date).toLocaleDateString()
+                  : "Not Renting"}
+              </p>
+              <p className="text-bold text-tiny text-default-400">
+                {user.departure_estimate
+                  ? new Date(user.departure_estimate).toLocaleDateString()
+                  : ""}
+              </p>
+            </div>
+          );
+        case "role":
+          return (
+            <Chip
+              className="capitalize"
+              color={
+                user.role === "admin"
+                  ? "primary"
+                  : user.role === "renter"
+                    ? "secondary"
+                    : "default"
+              }
+              size="sm"
+              variant="flat"
+            >
+              {user.role}
+            </Chip>
+          );
+        case "actions":
+          return (
+            <div className="relative flex justify-end items-center gap-2">
+              <Dropdown>
+                <DropdownTrigger>
+                  <Button isIconOnly size="sm" variant="light">
+                    <Icon
+                      className="text-default-300"
+                      icon="lucide:more-vertical"
+                    />
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu>
+                  <DropdownItem
+                    key="view"
+                    onPress={() => router.push(`/admin/users/${user.id}`)}
+                  >
+                    View
+                  </DropdownItem>
+                  <DropdownItem
+                    key="edit"
+                    onPress={() => router.push(`/admin/users/edit/${user.id}`)}
+                  >
+                    Edit
+                  </DropdownItem>
+                </DropdownMenu>
+              </Dropdown>
+            </div>
+          );
+        default:
+          return null;
+      }
+    },
+    [router],
+  );
 
-  const renderCell = React.useCallback((user: User, columnKey: Key) => {
-    switch (columnKey) {
-      case "name":
-        return (
-          <UserComponent
-            avatarProps={{ radius: "lg", src: user.profile_picture }}
-            description={user.email}
-            name={`${user.first_name} ${user.last_name}`}
-          >
-            {user.email}
-          </UserComponent>
-        );
-      case "contact":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-small">{user.phone_number}</p>
-            <p className="text-bold text-tiny text-default-400">
-              {user.pt_phone_number}
-            </p>
-          </div>
-        );
-      case "house":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-small">House {user.house_number}</p>
-            <p className="text-bold text-tiny text-default-400">
-              Room {user.room_number}
-            </p>
-          </div>
-        );
-      case "country":
-        return <span className="capitalize">{user.country}</span>;
-      case "language":
-        return (
-          <Chip
-            className="capitalize"
-            color={user.preferred_language === "pt" ? "primary" : "secondary"}
-            size="sm"
-            variant="flat"
-          >
-            {user.preferred_language}
-          </Chip>
-        );
-      case "stay":
-        return (
-          <div className="flex flex-col">
-            <p className="text-bold text-small">
-              {user.arrival_date ? new Date(user.arrival_date).toLocaleDateString() : "Not Renting"}
-            </p>
-            <p className="text-bold text-tiny text-default-400">
-              {user.departure_estimate ? new Date(user.departure_estimate).toLocaleDateString() : ""}
-            </p>
-          </div>
-        );
-      case "role":
-        return (
-          <Chip
-            className="capitalize"
-            color={
-              user.role === "admin"
-                ? "primary"
-                : user.role === "renter"
-                  ? "secondary"
-                  : "default"
-            }
-            size="sm"
-            variant="flat"
-          >
-            {user.role}
-          </Chip>
-        );
-      case "actions":
-        return (
-          <div className="relative flex justify-end items-center gap-2">
-            <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly size="sm" variant="light">
-                  <Icon
-                    icon="lucide:more-vertical"
-                    className="text-default-300"
-                  />
-                </Button>
-              </DropdownTrigger>
-              <DropdownMenu>
-                <DropdownItem
-                  key="view"
-                  onPress={() => router.push(`/admin/users/${user.id}`)}
-                >
-                  View
-                </DropdownItem>
-                <DropdownItem
-                  key="edit"
-                  onPress={() => router.push(`/admin/users/edit/${user.id}`)}
-                >
-                  Edit
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
-          </div>
-        );
-      default:
-        return null;
-    }
-  }, []);
-
-  const onNextPage = React.useCallback(() => {
+  const onNextPage = useCallback(() => {
     if (page < pages) {
       setPage(page + 1);
     }
   }, [page, pages]);
 
-  const onPreviousPage = React.useCallback(() => {
+  const onPreviousPage = useCallback(() => {
     if (page > 1) {
       setPage(page - 1);
     }
   }, [page]);
 
-  const onRowsPerPageChange = React.useCallback(
+  const onRowsPerPageChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       setRowsPerPage(Number(e.target.value));
       setPage(1);
@@ -240,21 +230,17 @@ export default function App() {
     [],
   );
 
-  const onSearchChange = React.useCallback((value: string) => {
-    if (value) {
-      setFilterValue(value);
-      setPage(1);
-    } else {
-      setFilterValue("");
-    }
+  const onSearchChange = useCallback((value: string) => {
+    setFilterValue(value);
+    setPage(1);
   }, []);
 
-  const onClear = React.useCallback(() => {
+  const onClear = useCallback(() => {
     setFilterValue("");
     setPage(1);
   }, []);
 
-  const topContent = React.useMemo(() => {
+  const topContent = useMemo(() => {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex justify-between gap-3 items-end">
@@ -264,7 +250,7 @@ export default function App() {
             placeholder="Search by name..."
             startContent={<Icon icon="lucide:search" />}
             value={filterValue}
-            onClear={() => onClear()}
+            onClear={onClear}
             onValueChange={onSearchChange}
           />
           <div className="flex gap-3">
@@ -272,7 +258,7 @@ export default function App() {
               <DropdownTrigger className="hidden sm:flex">
                 <Button
                   endContent={
-                    <Icon icon="lucide:chevron-down" className="text-small" />
+                    <Icon className="text-small" icon="lucide:chevron-down" />
                   }
                   variant="flat"
                 >
@@ -322,11 +308,12 @@ export default function App() {
     onRowsPerPageChange,
     users.length,
     onSearchChange,
+    onClear,
   ]);
 
-  const bottomContent = React.useMemo(() => {
+  const bottomContent = useMemo(() => {
     return (
-      <div className="py-2 px-2 flex justify-between items-center">
+      <div className="px-2 flex justify-between items-center">
         <Pagination
           isCompact
           showControls
@@ -337,28 +324,17 @@ export default function App() {
           onChange={setPage}
         />
         <div className="hidden sm:flex w-[30%] justify-end gap-2">
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onPreviousPage}
-          >
+          <Button size="sm" variant="flat" onPress={onPreviousPage}>
             Previous
           </Button>
-          <Button
-            isDisabled={pages === 1}
-            size="sm"
-            variant="flat"
-            onPress={onNextPage}
-          >
+          <Button size="sm" variant="flat" onPress={onNextPage}>
             Next
           </Button>
         </div>
       </div>
     );
-  }, [filteredItems.length, page, pages]);
+  }, [page, pages, onPreviousPage, onNextPage]);
 
-  // Render a loading state if data isn't ready
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[60vh]">
@@ -373,9 +349,7 @@ export default function App() {
       aria-label="User management table"
       bottomContent={bottomContent}
       bottomContentPlacement="outside"
-      classNames={{
-        wrapper: "max-h-[382px]",
-      }}
+      classNames={{ wrapper: "max-h-[382px]" }}
       topContent={topContent}
       topContentPlacement="outside"
     >
@@ -389,11 +363,11 @@ export default function App() {
           </TableColumn>
         )}
       </TableHeader>
-      <TableBody emptyContent={"No users found"} items={items}>
+      <TableBody emptyContent="No users found" items={items}>
         {(item) => (
           <TableRow key={item.id}>
             {(columnKey) => (
-              <TableCell>{renderCell(item, columnKey as string)}</TableCell>
+              <TableCell>{renderCell(item, columnKey as keyof User)}</TableCell>
             )}
           </TableRow>
         )}

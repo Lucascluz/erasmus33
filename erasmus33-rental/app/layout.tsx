@@ -1,6 +1,5 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
-import { Link } from "@heroui/link";
 import clsx from "clsx";
 
 import { Providers } from "./providers";
@@ -19,6 +18,8 @@ export const metadata: Metadata = {
     icon: "https://gkpotoixqcjijozesfee.supabase.co/storage/v1/object/public/assets//271729632_265800025651586_8565946951297877827_n.jpg",
   },
 };
+
+// Autenticate 
 
 export const viewport: Viewport = {
   themeColor: [

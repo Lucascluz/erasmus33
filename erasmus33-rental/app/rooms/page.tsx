@@ -27,7 +27,7 @@ export default function AdminRoomsPage() {
   }, []);
 
   return (
-    <div className="container mx-auto">
+    <div className="container mx-auto py-6">
       <h1 className="text-2xl font-bold mb-4">Manage Rooms</h1>
       <Link href="/admin/rooms/new">
         <Button>Add New Room</Button>
@@ -36,7 +36,6 @@ export default function AdminRoomsPage() {
         {rooms.map((room) => (
           <Card
             key={room.id}
-            isPressable
             className="cursor-pointer"
             onPress={() => router.push(`/admin/rooms/${room.id}`)}
           >
