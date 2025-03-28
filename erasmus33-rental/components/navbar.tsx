@@ -120,6 +120,7 @@ export const Navbar = () => {
                 )}
                 color="foreground"
                 href={item.href}
+                onClick={() => setIsMenuOpen(false)} // Close menu on click
               >
                 {item.label}
               </NextLink>
@@ -198,6 +199,7 @@ export const Navbar = () => {
               )}
               color="foreground"
               href={item.href}
+              onClick={() => setIsMenuOpen(false)} // Close menu on click
             >
               {item.label}
             </NextLink>

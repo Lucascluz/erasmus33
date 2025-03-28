@@ -28,7 +28,7 @@ export default function AdminHouseCreatePage() {
     google_maps: "",
     street_view: "",
     total_rooms: 0,
-    taken_rooms: 0,
+    available_rooms: [],
     images: [],
   });
 
@@ -83,7 +83,9 @@ export default function AdminHouseCreatePage() {
             google_maps: house.google_maps,
             street_view: house.street_view,
             total_rooms: house.total_rooms,
-            taken_rooms: house.taken_rooms,
+            available_rooms: house.total_rooms
+              ? new Array(house.total_rooms).fill(true)
+              : [],
           },
         ])
         .select("id")

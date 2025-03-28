@@ -16,7 +16,7 @@ import {
 
 import { supabase } from "@/lib/supabase";
 import { User } from "@/interfaces/user";
-import { nationalities } from "@/lib/countries";
+import { countries } from "@/lib/countries";
 import { languages } from "@/lib/languages";
 import ImageCropper from "@/components/image-cropper";
 
@@ -45,7 +45,7 @@ export default function ProfilePage() {
     phone_number: "",
     pt_phone_number: "",
     email: "",
-    nationality: "",
+    country: "",
     preferred_language: "",
     role: "user",
   };
@@ -246,20 +246,20 @@ export default function ProfilePage() {
                 <p className="m-2">International Information</p>
                 <div className="grid grid-cols-2 gap-4">
                   <Select className="mb-6" label="Nationality">
-                    {Object.values(nationalities).map((nationality) => (
+                    {Object.values(countries).map((country) => (
                       <SelectItem
-                        key={nationality}
+                        key={country}
                         onPress={
-                          nationality === "Other"
+                          country === "Other"
                             ? () => setOtherNationalityState(true)
                             : () => {
-                                setUser({ ...user, nationality });
+                                setUser({ ...user, country });
                                 console.log("User:", user);
                                 setOtherNationalityState(false);
                               }
                         }
                       >
-                        {nationality}
+                        {country}
                       </SelectItem>
                     ))}
                   </Select>
@@ -269,7 +269,7 @@ export default function ProfilePage() {
                       label="Other Nationality"
                       type="text"
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setUser({ ...user, nationality: e.target.value })
+                        setUser({ ...user, country: e.target.value })
                       }
                     />
                   ) : null}

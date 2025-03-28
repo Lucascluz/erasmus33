@@ -8,6 +8,7 @@ import { Image } from "@heroui/image";
 
 import { supabase } from "@/lib/supabase";
 import { House } from "@/interfaces/house";
+import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 
 export default function HouseViewPage() {
   const router = useRouter();
@@ -42,11 +43,17 @@ export default function HouseViewPage() {
   if (!house) return <div>Loading...</div>;
 
   return (
-    <div className="mx-auto pb-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">House {house.number}</h1>
-        <Button variant="bordered" onPress={() => router.push("/houses")}>
-          Back to Houses
+    <div className="mx-auto pb-4 max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="grid grid-cols-12 justify-between items-center mb-4">
+        <h1 className="col-span-11 text-2xl font-bold text-center sm:text-left">
+          House {house.number}
+        </h1>
+        <Button
+          size="sm"
+          variant="ghost"
+          onPress={() => router.push("/houses")}
+        >
+          <ArrowLeftIcon />
         </Button>
       </div>
 
@@ -54,10 +61,15 @@ export default function HouseViewPage() {
         <div className="lg:col-span-2">
           <Card className="py-4">
             <div className="w-full aspect-w-16 aspect-h-9">
-              <Image className="object-cover rounded px-4" src={imageDisplay} />
+              <Image
+                className="object-cover rounded px-4"
+                src={imageDisplay}
+                alt={`House ${house.number}`}
+                width={1920}
+              />
             </div>
             {house.images?.length > 0 && (
-              <CardFooter className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
+              <CardFooter className="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 mt-4">
                 {house.images.map((image, index) => (
                   <Card
                     key={(house.id ?? "unknown") + index}
@@ -67,8 +79,7 @@ export default function HouseViewPage() {
                     onPress={() => setImageDisplay(image)}
                   >
                     <Image
-                      width={160}
-                      height={90}
+                      width={320}
                       alt={`House ${index}`}
                       className="w-full h-auto object-cover rounded"
                       src={image}

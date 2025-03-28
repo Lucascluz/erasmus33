@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"; // Added useSearchParams
 import { Button } from "@heroui/button";
 import { Input } from "@heroui/input";
 import { Card, CardFooter } from "@heroui/card";
@@ -27,20 +27,13 @@ const roomTypes = [
   { key: "Quad", value: 4 },
 ];
 
-export default function AdminRoomCreatePage() {
+export default function AdminRoomEditPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const roomId = searchParams.get("id"); // Get room ID from URL
 
   // State for room details
-  const [room, setRoom] = useState<Room>({
-    description: "",
-    house: "" as UUID,
-    price: 0,
-    is_available: true,
-    images: [],
-    number: 0,
-    beds: 0,
-    renters: [],
-  });
+  const [room, setRoom] = useState<Room | null>(null); // Initialize as null
 
   // State for houses and users
   const [houses, setHouses] = useState<House[] | null>(null);
@@ -68,6 +61,22 @@ export default function AdminRoomCreatePage() {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    // Fetch room details
+    const fetchRoomDetails = async () => {
+      if (!roomId) return;
+      const { data, error } = await supabase
+        .from("rooms")
+        .select("*")
+        .eq("id", roomId)
+        .single();
+      if (error) throw error;
+      if (data) setRoom(data);
+    };
+
+    fetchRoomDetails();
+  }, [roomId]);
+
   // Update UI with new image
   const updateRoomImagesUI = (file: File) => {
     const newUrl = URL.createObjectURL(file);
@@ -82,47 +91,46 @@ export default function AdminRoomCreatePage() {
   };
 
   // Handle form submission
-  const insertRoomData = async (e: React.FormEvent<HTMLFormElement>) => {
+  const updateRoomData = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const roomId = await createRoomInDatabase();
+      if (roomId) {
+        await updateRoomInDatabase(roomId);
 
-      if (roomId && newRoomImages.length > 0) {
-        await uploadRoomImages(roomId);
+        if (newRoomImages.length > 0) {
+          await uploadRoomImages(roomId);
+        }
+
+        router.push("/admin/rooms");
       }
-
-      router.push("/admin/rooms");
     } catch (error) {
-      console.error("Error during room creation:", error);
+      console.error("Error during room update:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Create room in the database
-  const createRoomInDatabase = async () => {
+  // Update room in the database
+  const updateRoomInDatabase = async (roomId: string) => {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("rooms")
-        .insert([
-          {
-            description: room.description,
-            house: room.house,
-            price: room.price,
-            is_available: room.is_available,
-          },
-        ])
-        .select("id")
-        .single();
+        .update({
+          description: room?.description,
+          house: room?.house,
+          price: room?.price,
+          is_available: room?.is_available,
+          number: room?.number,
+          beds: room?.beds,
+          renters: room?.renters,
+        })
+        .eq("id", roomId);
 
       if (error) throw error;
-
-      return data?.id || null;
     } catch (error) {
-      console.error("Error creating room in database:", error);
-      return null;
+      console.error("Error updating room in database:", error);
     }
   };
 
@@ -152,7 +160,7 @@ export default function AdminRoomCreatePage() {
       );
 
       if (uploadedImageUrls.length > 0) {
-        const updatedImages = [...room.images, ...uploadedImageUrls]; // Merge images
+        const updatedImages = [...(room?.images || []), ...uploadedImageUrls]; // Merge images
         const { error } = await supabase
           .from("rooms")
           .update({ images: updatedImages })
@@ -160,26 +168,26 @@ export default function AdminRoomCreatePage() {
 
         if (error) throw error;
 
-        setRoom((prevRoom) => ({ ...prevRoom, images: updatedImages })); // Update state
+        setRoom((prevRoom) => (prevRoom ? { ...prevRoom, images: updatedImages } : prevRoom)); // Update state
       }
     } catch (error) {
       console.error("Error uploading room images:", error);
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (!room) return <div>Loading...</div>; // Show loading until room data is fetched
 
   return (
     <div className="container mx-auto">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Registering a new room</h1>
+        <h1 className="text-2xl font-bold">Editing Room</h1>
         <Button variant="bordered" onPress={() => router.push("/admin/rooms")}>
           Back to Rooms
         </Button>
       </div>
 
       <Card className="p-4">
-        <form className="space-y-4" onSubmit={insertRoomData}>
+        <form className="space-y-4" onSubmit={updateRoomData}>
           {/* Room Details Section */}
           <p>Room Details</p>
           <div className="grid grid-cols-6 gap-4">
@@ -194,6 +202,7 @@ export default function AdminRoomCreatePage() {
                         setRoom({ ...room, house: house.id });
                       }
                     }}
+                    isSelected={room?.house === house.id} // Pre-select current house
                   >
                     {house.number}
                   </SelectItem>
@@ -203,7 +212,7 @@ export default function AdminRoomCreatePage() {
               required
               label="Room Number"
               type="number"
-              value={room.number.toString()}
+              value={room?.number.toString() || ""}
               onChange={(e) =>
                 setRoom({ ...room, number: parseInt(e.target.value, 10) })
               }
@@ -219,6 +228,7 @@ export default function AdminRoomCreatePage() {
                     key={type.key}
                     textValue={`${type.key}`}
                     onPress={() => setRoom({ ...room, beds: type.value })}
+                    isSelected={room?.beds === type.value} // Pre-select current type
                   >
                     {type.key}
                   </SelectItem>
@@ -228,7 +238,7 @@ export default function AdminRoomCreatePage() {
               required
               label="Price"
               type="number"
-              value={room.price.toString()}
+              value={room?.price.toString() || ""}
               onChange={(e) =>
                 setRoom({ ...room, price: parseFloat(e.target.value) })
               }
@@ -246,8 +256,12 @@ export default function AdminRoomCreatePage() {
                     className="flex items-center"
                     onPress={() =>
                       user.id &&
-                      setRoom({ ...room, renters: [...room.renters, user.id] })
+                      setRoom({
+                        ...room,
+                        renters: [...(room?.renters || []), user.id],
+                      })
                     }
+                    isSelected={user.id ? room?.renters?.includes(user.id) ?? false : false} // Pre-select current renters
                   >
                     <div className="flex items-center gap-4">
                       <Avatar
@@ -265,7 +279,7 @@ export default function AdminRoomCreatePage() {
               label="Description"
               size="lg"
               type="text"
-              value={room.description}
+              value={room?.description || ""}
               onChange={(e) =>
                 setRoom({ ...room, description: e.target.value })
               }
@@ -282,7 +296,7 @@ export default function AdminRoomCreatePage() {
               }}
             />
             <p>
-              {room.images.length === 0
+              {room?.images.length === 0
                 ? "Upload an image to the room"
                 : "Add new image"}
             </p>
@@ -317,18 +331,17 @@ export default function AdminRoomCreatePage() {
 
           <div className="flex justify-between">
             <Button color="primary" type="submit" variant="solid">
-              Confirm Creation
+              Confirm Update
             </Button>
             <Checkbox
               className="mb-2"
               size="lg"
-              checked={room.is_available}
+              checked={room?.is_available || false}
               onChange={(e) =>
                 setRoom({ ...room, is_available: e.target.checked })
               }
-              defaultSelected
             >
-              {room.is_available ? "Available" : "Not Available"}
+              {room?.is_available ? "Available" : "Not Available"}
             </Checkbox>
           </div>
         </form>

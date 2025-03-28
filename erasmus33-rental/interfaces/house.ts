@@ -9,6 +9,6 @@ export interface House {
   google_maps: string;
   street_view: string;
   total_rooms: number;
-  taken_rooms: number;
+  available_rooms: boolean[];
   images: string[];
 }

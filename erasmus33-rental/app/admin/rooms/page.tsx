@@ -5,10 +5,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@heroui/button";
 import Link from "next/link";
 import { Card, CardHeader } from "@heroui/card";
-import Image from "next/image";
+import { Image } from "@heroui/image";
 
 import { Room } from "@/interfaces/room";
 import { supabase } from "@/lib/supabase";
+import { EyeIcon } from "@heroicons/react/24/solid";
 
 export default function AdminRoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -36,15 +37,31 @@ export default function AdminRoomsPage() {
         {rooms.map((room) => (
           <Card
             key={room.id}
+            isHoverable
             isPressable
-            className="cursor-pointer"
-            onPress={() => router.push(`/admin/rooms/${room.id}`)}
+            isFooterBlurred
+            isBlurred
+            className="flex flex-col items-center border-none w-full"
+            onPress={() => router.push(`/admin/rooms/edit/${room.id}`)}
           >
-            <CardHeader>Room {room.id}</CardHeader>
-            {room.images.length > 0 ? (
+            <CardHeader className="justify-between w-full">
+              House {room.number}
+              <Button
+                as="a"
+                className="text-tiny text-white bg-black/20"
+                color="default"
+                radius="lg"
+                size="sm"
+                variant="flat"
+                onPress={() => router.push(`/rooms/${room.id}`)}
+              >
+                <EyeIcon />
+              </Button>
+            </CardHeader>
+            {room.images ? (
               <Image
-                alt={room.id ? room.id.toString() : "No ID"}
-                className="w-full h-48 object-cover rounded"
+                removeWrapper
+                className="w-full h-48 object-cover"
                 src={room.images[0]}
               />
             ) : (
@@ -52,24 +69,6 @@ export default function AdminRoomsPage() {
                 <span className="text-gray-500">No Image Available</span>
               </div>
             )}
-            <div className="flex justify-between p-3">
-              <Button
-                variant="solid"
-                onPress={() => {
-                  router.push(`/admin/rooms/${room.id}`);
-                }}
-              >
-                Preview
-              </Button>
-              <Button
-                variant="solid"
-                onPress={() => {
-                  router.push(`/admin/rooms/edit/${room.id}`);
-                }}
-              >
-                Edit
-              </Button>
-            </div>
           </Card>
         ))}
       </div>
