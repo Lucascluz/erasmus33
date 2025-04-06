@@ -34,14 +34,16 @@ Follow these steps to set up the application locally:
 
 ### Step 1: Clone the Repository
 
-````bash
+```bash
 git clone https://github.com/your-username/erasmus-33.git
 cd erasmus-33
+```
 
 ### Step 2: Install Depencencies
 
 ```bash
 npm install
+```
 
 ### Step 3: Configure Envinronment Variables
 
@@ -49,6 +51,7 @@ npm install
 
 ```bash
 mv .env.example .env.local
+```
 
 2. Update the .env.local file with your supabase project details
 
