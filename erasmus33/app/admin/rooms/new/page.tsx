@@ -1,13 +1,14 @@
 import RoomForm from '@/components/rooms/room-form';
-import { handleCreateRoomAction } from './actions';
 import { createClient } from '@/utils/supabase/server';
+import { ArrowLeftIcon } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function NewRoomPage() {
 	const supabase = await createClient();
 
 	const { data: usersData, error: userError } = await supabase
 		.from('profiles')
-		.select('user_id, first_name, last_name, picture_url');
+		.select('user_id, first_name, last_name, email, picture_url');
 
 	if (userError) console.error('Error fetching users:', userError);
 
@@ -17,6 +18,7 @@ export default async function NewRoomPage() {
 			id: user.user_id,
 			first_name: user.first_name,
 			last_name: user.last_name,
+			email: user.email,
 			profile_picture: user.picture_url,
 		})) || [];
 
@@ -38,9 +40,8 @@ export default async function NewRoomPage() {
 
 	return (
 		<div className='max-w-3xl mx-auto p-6'>
-			<h1 className='text-3xl font-bold mb-6'>Create New Room</h1>
-			<RoomForm dto={{users, houses}} onSubmit={handleCreateRoomAction} />{' '}
-			{/* Pass handleCreateRoomAction */}
+			<h1 className='text-3xl font-bold'>Create New Room</h1>
+			<RoomForm dto={{ users, houses }}/>{' '}
 		</div>
 	);
 }

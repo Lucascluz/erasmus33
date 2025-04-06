@@ -55,7 +55,7 @@ export default function RootLayout({
 
 					{/* Centered page content with responsive padding */}
 					<div className='flex flex-col items-center w-full px-4 sm:px-6 lg:px-8'>
-						<div className='w-full max-w-4xl py-8'>
+						<div className='w-full max-w-5xl py-8 items-center'>
 							<Providers>{children}</Providers>
 						</div>
 						<footer className='w-full'></footer>

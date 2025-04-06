@@ -1,14 +1,8 @@
-import { cookies } from 'next/headers';
 import RoomCard from '@/components/rooms/room-card';
-import RoomFilters from '@/components/rooms/room-filters';
 import { Room } from '@/interfaces/room';
 import { createClient } from '@/utils/supabase/server';
 
-export default async function RoomsPage({
-	searchParams,
-}: {
-	searchParams: Record<string, string>;
-}) {
+export default async function RoomsPage() {
 	const supabase = await createClient();
 
 	const { data: rooms, error } = await supabase.from('rooms').select('*');

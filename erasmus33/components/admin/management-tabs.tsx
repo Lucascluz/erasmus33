@@ -30,6 +30,9 @@ export default function ManagementTabs({
 			<Tab key='users' title='Users'>
 				<UsersManagement profiles={profiles} />
 			</Tab>
+			<Tab key='renters' title='Renters'>
+				{/* Renters Management Component */}
+			</Tab>
 			<Tab key='payments' title='Payments'>
 				<PaymentsManagement />
 			</Tab>
