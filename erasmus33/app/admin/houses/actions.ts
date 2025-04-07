@@ -16,7 +16,6 @@ export const handleCreateHouseBase = async (
 			postal_code: house.postal_code,
 			description: house.description,
 			google_maps: house.google_maps,
-			street_view: house.street_view,
 			total_rooms: house.total_rooms,
 			full_rooms: house.full_rooms,
 		})

@@ -6,21 +6,22 @@ import { color } from 'framer-motion';
 
 export default function ProfileDropdown({ role }: { role: string }) {
 	const userDropdownItems = [
-		{
-			key: 'profile',
-			label: 'Profile',
-			href: '/protected/profile',
-			action: null,
-		},
-		{
-			key: 'payments',
-			label: 'Payments',
-			href: '/protected/payments',
-			action: null,
-		},
+		// {
+		// 	key: 'profile',
+		// 	label: 'Profile',
+		// 	href: '/protected/profile',
+		// 	action: null,
+		// },
+		// {
+		// 	key: 'payments',
+		// 	label: 'Payments',
+		// 	href: '/protected/payments',
+		// 	action: null,
+		// },
 		{
 			key: 'signout',
 			label: 'Sign-Out',
+			href: null,
 			action: signOutAction,
 			color: 'danger' as 'danger',
 		},
@@ -45,7 +46,7 @@ export default function ProfileDropdown({ role }: { role: string }) {
 						key={key}
 						color={color}
 						onPress={action ? action : undefined}
-						href={href}>
+						href={href ?? undefined}>
 						{label}
 					</DropdownItem>
 				)

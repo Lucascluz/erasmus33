@@ -28,18 +28,17 @@ export default function ManagementTabs({
 			<Tab key='rooms' title='Rooms'>
 				<RoomsManagement rooms={rooms} />
 			</Tab>
-			<Tab key='users' title='Users'>
+			{/* <Tab key='users' title='Users'>
 				<UsersManagement profiles={profiles} />
 			</Tab>
 			<Tab key='renters' title='Renters'>
-				{/* Renters Management Component */}
 			</Tab>
 			<Tab key='payments' title='Payments'>
 				<PaymentsManagement />
 			</Tab>
 			<Tab key='analytics' title='Analytcis'>
 				<AnalyticsReports />
-			</Tab>
+			</Tab> */}
 		</Tabs>
 	);
 }

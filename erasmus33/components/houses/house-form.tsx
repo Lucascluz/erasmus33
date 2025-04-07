@@ -24,7 +24,6 @@ export default function HouseForm({ initialData }: HouseFormProps) {
 			postal_code: '',
 			description: '',
 			google_maps: '',
-			street_view: '',
 			total_rooms: 0,
 			full_rooms: 0,
 			images: [],
@@ -106,7 +105,16 @@ export default function HouseForm({ initialData }: HouseFormProps) {
 						type='text'
 						label='Street'
 						value={house.street}
-						onChange={(e) => setHouse({ ...house, street: e.target.value })}
+						onChange={(e) => {
+							const mapsAddress = e.target.value
+								.replace(/\s+/g, '+')
+								.concat(`+${house.number}`);
+							setHouse({
+								...house,
+								street: e.target.value,
+								google_maps: `https://www.google.com/maps/place/${mapsAddress}`,
+							});
+						}}
 					/>
 					<Input
 						type='number'
@@ -120,14 +128,14 @@ export default function HouseForm({ initialData }: HouseFormProps) {
 						value={house.postal_code}
 						onChange={(e) => setHouse({ ...house, postal_code: e.target.value })}
 					/>
-                    <Input
-                        type='number'
-                        label='Total Rooms'
-                        value={house.total_rooms.toString()}
-                        onChange={(e) =>
-                            setHouse({ ...house, total_rooms: Number(e.target.value) })
-                        }
-                    />
+					<Input
+						type='number'
+						label='Total Rooms'
+						value={house.total_rooms.toString()}
+						onChange={(e) =>
+							setHouse({ ...house, total_rooms: Number(e.target.value) })
+						}
+					/>
 				</div>
 				<Input
 					type='text'

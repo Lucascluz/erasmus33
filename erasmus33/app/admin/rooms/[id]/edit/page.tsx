@@ -1,21 +1,28 @@
-import RoomForm from '@/components/rooms/room-form';
 import { createClient } from '@/utils/supabase/server';
+import RoomForm from '@/components/rooms/room-form';
 import { Room } from '@/interfaces/room';
-import { GetServerSidePropsContext } from 'next'; // Import the correct type
+import { use } from 'react';
 
-export default async function EditRoomPage({
-	params,
-}: GetServerSidePropsContext<{ id: string }>) {
-	// Use the correct type for params
+type Params = Promise<{ id: string }>;
+
+export default async function EditRoomPage({ params }: { params: Params }) {
+	const { id }: { id: string } = use(params); // fix this line
+
+	if (!id) {
+		return <div className='p-6 text-red-500'>Invalid room ID.</div>;
+	}
+
 	const supabase = await createClient();
 
 	const { data: room } = await supabase
 		.from('rooms')
 		.select('*')
-		.eq('id', params?.id ?? '')
+		.eq('id', id)
 		.single();
 
-	if (!room) return <div className='p-6 text-red-500'>Room not found.</div>;
+	if (!room) {
+		return <div className='p-6 text-red-500'>Room not found.</div>;
+	}
 
 	const { data: houses } = await supabase
 		.from('houses')

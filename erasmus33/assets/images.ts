@@ -18,3 +18,9 @@ export const images = {
 		src: 'https://gkpotoixqcjijozesfee.supabase.co/storage/v1/object/public/assets//kathedrale-night.jpg',
 	},
 };
+
+export const placeHolders = {
+	profilePicture: {
+		src: 'https://gkpotoixqcjijozesfee.supabase.co/storage/v1/object/public/profile_pictures/assets/user-placeholder.png',
+	},
+};

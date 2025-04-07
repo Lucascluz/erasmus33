@@ -4,42 +4,20 @@ import { createClient } from '@/utils/supabase/server';
 export default async function NewRoomPage() {
 	const supabase = await createClient();
 
-	const { data: usersData, error: userError } = await supabase
-		.from('profiles')
-		.select('user_id, first_name, last_name, email, picture_url');
-
-	if (userError) console.error('Error fetching users:', userError);
-
-	// Map database fields to component props
-	const users =
-		usersData?.map((user) => ({
-			id: user.user_id,
-			first_name: user.first_name,
-			last_name: user.last_name,
-			email: user.email,
-			profile_picture: user.picture_url,
-		})) || [];
-
-	const { data: housesData, error: houseError } = await supabase
+	const { data: houses } = await supabase
 		.from('houses')
-		.select('id, number');
+		.select('id, number')
+		.order('number', { ascending: true });
 
-	if (houseError) console.error('Error fetching houses:', houseError.message);
-
-	// Map database fields to component props
-	const houses =
-		housesData?.map((house) => ({
-			id: house.id,
-			number: house.number,
-		})) || [];
-
-	if (houses.length == 0)
-		return <div>Register a house before trying to register a room!</div>;
+	const { data: profiles } = await supabase
+		.from('profiles')
+		.select('id, first_name, last_name, email, profile_picture')
+		.order('first_name', { ascending: true });
 
 	return (
 		<div className='max-w-3xl mx-auto p-6'>
-			<h1 className='text-3xl font-bold'>Create New Room</h1>
-			<RoomForm dto={{ users, houses }}/>{' '}
+			<h1 className='text-3xl font-bold mb-6'>Edit Room</h1>
+			<RoomForm usersData={profiles || []} housesData={houses || []} />
 		</div>
 	);
 }

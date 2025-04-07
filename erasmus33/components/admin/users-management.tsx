@@ -47,7 +47,6 @@ export default function UsersManagement({ profiles }: { profiles: Profile[] }) {
 								</TableCell>
 								<TableCell>
 									<p>{profile.phone_number}</p>
-									<p className='text-gray-500 text-sm'>{profile.pt_phone_number}</p>
 								</TableCell>
 								<TableCell>{profile.email}</TableCell>
 								<TableCell>

@@ -18,12 +18,6 @@ export const metadata: Metadata = {
 	},
 };
 
-const publicLinks = [
-	{ name: 'About', href: '/about' },
-	{ name: 'Houses', href: '/protected/houses' },
-	{ name: 'Rooms', href: '/protected/rooms' },
-];
-
 export default function RootLayout({
 	children,
 }: {
@@ -50,7 +44,7 @@ export default function RootLayout({
 				<main className='min-h-screen flex flex-col relative z-10 w-full'>
 					{/* Full width navbar */}
 					<div className='w-full'>
-						<Navbar links={publicLinks} />
+						<Navbar />
 					</div>
 
 					{/* Centered page content with responsive padding */}

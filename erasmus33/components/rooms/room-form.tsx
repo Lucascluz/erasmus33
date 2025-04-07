@@ -131,18 +131,21 @@ export default function RoomForm({
 			<form className='space-y-4' onSubmit={handleSubmit}>
 				<div className='grid grid-cols-2 gap-4'>
 					<Input
+						isRequired
 						type='text'
 						label='Room Number'
 						value={room.number.toString()}
 						onChange={(e) => setRoom({ ...room, number: parseInt(e.target.value) })}
 					/>
 					<Input
+						isRequired
 						type='number'
 						label='Price'
 						value={room.price.toString()}
 						onChange={(e) => setRoom({ ...room, price: parseFloat(e.target.value) })}
 					/>
 					<Select
+						isRequired
 						label='Type'
 						value={room.type}
 						onChange={(e) => setRoom({ ...room, type: e.target.value })}>
@@ -154,13 +157,15 @@ export default function RoomForm({
 						</SelectItem>
 					</Select>
 					<Input
+						isRequired
 						type='number'
 						label='Beds'
 						value={room.beds.toString()}
-						disabled={room.type === 'single'}
+						isReadOnly={room.type === 'single'}
 						onChange={(e) => setRoom({ ...room, beds: parseInt(e.target.value) })}
 					/>
 					<Select
+						isRequired
 						label='House'
 						value={room.house_id}
 						onChange={(value) => {
@@ -181,7 +186,7 @@ export default function RoomForm({
 							</SelectItem>
 						))}
 					</Select>
-					<Select
+					{/* <Select
 						label='Renters'
 						value={room.renters}
 						multiple
@@ -201,7 +206,7 @@ export default function RoomForm({
 								/>
 							</SelectItem>
 						))}
-					</Select>
+					</Select> */}
 				</div>
 				<Input
 					type='text'

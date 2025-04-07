@@ -2,12 +2,19 @@ import RoomGallery from '@/components/rooms/room-gallery';
 import RoomInfoCard from '@/components/rooms/room-info-card';
 import { Room } from '@/interfaces/room';
 import { createClient } from '@/utils/supabase/server';
+import { use } from 'react';
 
-export default async function RoomPage(context: { params: { id: string } }) {
-	const { params } = context;
+type Params = Promise<{ id: string }>;
+
+export default async function RoomViewPage({ params }: { params: Params }) {
+	const { id }: { id: string } = use(params); // fix this line
+
 	const supabase = await createClient();
 
-	const id = params.id;
+	if (!id) {
+		return <div>Quarto não encontrado.</div>;
+	}
+
 	const { data: room, error } = await supabase
 		.from('rooms')
 		.select('*')
