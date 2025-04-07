@@ -1,31 +1,47 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 import RoomGallery from '@/components/rooms/room-gallery';
 import RoomInfoCard from '@/components/rooms/room-info-card';
 import { Room } from '@/interfaces/room';
-import { createClient } from '@/utils/supabase/server';
-import { use } from 'react';
 
-type Params = Promise<{ id: string }>;
+export default function RoomViewPage() {
+	const { id } = useParams();
+	const [room, setRoom] = useState<Room | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
 
-export default async function RoomViewPage({ params }: { params: Params }) {
-	const { id }: { id: string } = use(params); // fix this line
+	useEffect(() => {
+		const fetchRoom = async () => {
+			if (!id || typeof id !== 'string') {
+				setError('ID inválido.');
+				setLoading(false);
+				return;
+			}
 
-	const supabase = await createClient();
+			const supabase = createClient();
+			const { data, error } = await supabase
+				.from('rooms')
+				.select('*')
+				.eq('id', id)
+				.single();
 
-	if (!id) {
-		return <div>Quarto não encontrado.</div>;
-	}
+			if (error || !data) {
+				setError('Quarto não encontrado.');
+			} else {
+				setRoom(data as Room);
+			}
+			setLoading(false);
+		};
 
-	const { data: room, error } = await supabase
-		.from('rooms')
-		.select('*')
-		.eq('id', id)
-		.single();
+		fetchRoom();
+	}, [id]);
 
-	if (error || !room) {
-		return <div>Quarto não encontrado.</div>;
-	}
-
-	console.log(room);
+	if (loading) return <div>Carregando...</div>;
+	if (error) return <div>{error}</div>;
+	if (!room) return <div>Quarto não encontrado.</div>;
 
 	return (
 		<div className='mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6'>
@@ -33,7 +49,7 @@ export default async function RoomViewPage({ params }: { params: Params }) {
 				<RoomGallery images={room.images} />
 			</div>
 			<div className='lg:col-span-2 xl:col-span-1'>
-				<RoomInfoCard room={room as Room} />
+				<RoomInfoCard room={room} />
 			</div>
 		</div>
 	);
