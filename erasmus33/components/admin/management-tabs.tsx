@@ -9,6 +9,7 @@ import PaymentsManagement from './payments-management';
 import { Room } from '@/interfaces/room';
 import { House } from '@/interfaces/house';
 import { Profile } from '@/interfaces/profile';
+import AnalyticsReports from './analytics-reports';
 
 export default function ManagementTabs({
 	profiles,
@@ -35,6 +36,9 @@ export default function ManagementTabs({
 			</Tab>
 			<Tab key='payments' title='Payments'>
 				<PaymentsManagement />
+			</Tab>
+			<Tab key='analytics' title='Analytcis'>
+				<AnalyticsReports />
 			</Tab>
 		</Tabs>
 	);

@@ -21,25 +21,23 @@ import {
 } from '@/app/admin/rooms/actions';
 import { createClient } from '@/utils/supabase/client';
 
-type userData = {
-	id: string;
-	first_name: string;
-	last_name: string;
-	email: string;
-	profile_picture: string;
-};
+interface RoomFormProps {
+	initialData?: Room;
+	housesData: { id: string; number: number }[];
+	usersData: {
+		id: string;
+		first_name: string;
+		last_name: string;
+		email: string;
+		profile_picture: string;
+	}[];
+}
 
-type houseData = {
-	id: string;
-	number: number;
-};
-
-type RoomFormProps = {
-	dto: { users: userData[]; houses: houseData[] };
-	initialData?: Room | null;
-};
-
-export default function RoomForm({ dto, initialData }: RoomFormProps) {
+export default function RoomForm({
+	initialData,
+	housesData,
+	usersData,
+}: RoomFormProps) {
 	const [room, setRoom] = useState<Room>(
 		initialData || {
 			id: '',
@@ -87,7 +85,7 @@ export default function RoomForm({ dto, initialData }: RoomFormProps) {
 				.upload(`${id}/${i}`, file, { upsert: true });
 
 			if (error) {
-				console.error('Erro ao subir imagem:', error);
+				console.error('Error uploading image:', error);
 				continue;
 			}
 
@@ -106,21 +104,26 @@ export default function RoomForm({ dto, initialData }: RoomFormProps) {
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 
-		// 1. Cria a casa
-		const roomId = await handleCreateRoomBase(room);
-		if (!roomId) {
-			alert('Erro ao criar a casa');
-			return;
+		try {
+			// 1. Create the room
+			const roomId = await handleCreateRoomBase(room);
+			if (!roomId) {
+				alert('Error creating the room');
+				return;
+			}
+
+			// 2. Upload images
+			const urls = await uploadImagesToStorage(roomId, roomImagesFiles);
+
+			// 3. Update room with image URLs
+			await updateRoomImages(roomId, urls);
+
+			// 4. Redirect
+			redirect('/admin');
+		} catch (error) {
+			console.error('Error submitting the form:', error);
+			alert('An error occurred. Please try again.');
 		}
-
-		// 2. Faz upload das imagens
-		const urls = await uploadImagesToStorage(roomId, roomImagesFiles);
-
-		// 3. Atualiza a casa com as URLs
-		await updateRoomImages(roomId, urls);
-
-		// 4. Redireciona
-		redirect('/admin');
 	};
 
 	return (
@@ -143,24 +146,26 @@ export default function RoomForm({ dto, initialData }: RoomFormProps) {
 						label='Type'
 						value={room.type}
 						onChange={(e) => setRoom({ ...room, type: e.target.value })}>
-						<SelectItem key='single'>Single</SelectItem>
-						<SelectItem key='shared'>Shared</SelectItem>
+						<SelectItem key='single' data-value='single'>
+							Single
+						</SelectItem>
+						<SelectItem key='shared' data-value='shared'>
+							Shared
+						</SelectItem>
 					</Select>
-
 					<Input
 						type='number'
 						label='Beds'
+						value={room.beds.toString()}
 						disabled={room.type === 'single'}
-						value={room.type === 'single' ? '1' : room.beds.toString()}
 						onChange={(e) => setRoom({ ...room, beds: parseInt(e.target.value) })}
 					/>
-
 					<Select
 						label='House'
 						value={room.house_id}
-						onChange={(e) => {
-							const selectedHouse = dto.houses.find(
-								(house) => house.id === e.target.value
+						onChange={(value) => {
+							const selectedHouse = housesData.find(
+								(house) => house.id === value.toString()
 							);
 							if (selectedHouse) {
 								setRoom({
@@ -170,28 +175,25 @@ export default function RoomForm({ dto, initialData }: RoomFormProps) {
 								});
 							}
 						}}>
-						{dto.houses.map((house) => (
-							<SelectItem
-								key={house.id}
-								data-value={house.id}
-								textValue={`Room ${house.number}`}>
-								Room {house.number}
+						{housesData.map((house) => (
+							<SelectItem key={house.id} data-value={house.id}>
+								House {house.number}
 							</SelectItem>
 						))}
 					</Select>
 					<Select
 						label='Renters'
-						value={room.renters.join(', ')}
+						value={room.renters}
 						multiple
 						onChange={(e) => {
-							const selectedUsers = e.target.value.split(', ');
-							setRoom({ ...room, renters: selectedUsers });
+							const selectedValues = Array.from(
+								e.target.selectedOptions,
+								(option) => option.value
+							);
+							setRoom({ ...room, renters: selectedValues });
 						}}>
-						{dto.users.map((user) => (
-							<SelectItem
-								key={user.id}
-								data-value={user.id}
-								textValue={`${user.first_name} ${user.last_name}`}>
+						{usersData.map((user) => (
+							<SelectItem key={user.id} text-value={user.first_name}>
 								<User
 									avatarProps={{ src: user.profile_picture }}
 									name={`${user.first_name} ${user.last_name}`}
@@ -210,7 +212,7 @@ export default function RoomForm({ dto, initialData }: RoomFormProps) {
 				<ImageCropper aspectRatio='16/9' callback={updateUi} />
 				<div className='grid grid-cols-4 gap-4'>
 					{roomImagesUrls.map((image, index) => (
-						<Card key={index} className='w-full overflow-hidde items-end'>
+						<Card key={index} className='w-full overflow-hidden items-end'>
 							<Image
 								src={image}
 								alt={`Room Image ${index + 1}`}
@@ -228,11 +230,11 @@ export default function RoomForm({ dto, initialData }: RoomFormProps) {
 					))}
 				</div>
 				<CardFooter className='flex justify-between'>
-					<Button className='p-2 rounded-md ' color='primary' type='submit'>
+					<Button className='p-2 rounded-md' color='primary' type='submit'>
 						Submit
 					</Button>
 					<Button
-						className=' p-2 rounded-md '
+						className='p-2 rounded-md'
 						color='danger'
 						type='button'
 						onPress={() => redirect('/admin')}>

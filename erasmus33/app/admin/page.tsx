@@ -27,9 +27,6 @@ export default async function AdminDashboard() {
 					houses={houses as House[]}
 					rooms={rooms as Room[]}
 				/>
-
-				{/* Analytics Section */}
-				<AnalyticsReports />
 			</CardBody>
 		</Card>
 	);

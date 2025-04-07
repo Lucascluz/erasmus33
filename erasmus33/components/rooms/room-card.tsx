@@ -13,12 +13,18 @@ export default function RoomCard({ room }: { room: Room }) {
 			onPress={() => redirect(`/protected/rooms/${room.id}`)}
 			className='block rounded-xl overflow-hidden shadow hover:shadow-lg transition cursor-pointer'>
 			<div className='relative w-full h-48'>
-				<Image
-					src={room.images[0]}
-					alt='Imagem do quarto'
-					fill
-					className='object-cover'
-				/>
+				{room.images[0] ? (
+					<Image
+						src={room.images[0]}
+						alt='Imagem do quarto'
+						fill
+						className='object-cover'
+					/>
+				) : (
+					<div className='w-full h-full bg-gray-200 flex items-center justify-center'>
+						<span className='text-gray-500'>Sem imagem</span>
+					</div>
+				)}
 			</div>
 			<div className='p-4 space-y-1'>
 				<h2 className='font-semibold text-lg'>

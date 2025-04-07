@@ -1,7 +1,5 @@
 import RoomForm from '@/components/rooms/room-form';
 import { createClient } from '@/utils/supabase/server';
-import { ArrowLeftIcon } from 'lucide-react';
-import Link from 'next/link';
 
 export default async function NewRoomPage() {
 	const supabase = await createClient();
