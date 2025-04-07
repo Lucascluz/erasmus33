@@ -1,108 +1,104 @@
-# Erasmus 33
+<a href="https://demo-nextjs-with-supabase.vercel.app/">
+  <img alt="Next.js and Supabase Starter Kit - the fastest way to build apps with Next.js and Supabase" src="https://demo-nextjs-with-supabase.vercel.app/opengraph-image.png">
+  <h1 align="center">Next.js and Supabase Starter Kit</h1>
+</a>
 
-Erasmus 33 is a room renting and advertising application designed to simplify the process of managing and renting rooms. Built with **Next.js**, **Supabase**, and **Tailwind CSS**, this application provides a seamless experience for both administrators and renters.
+<p align="center">
+ The fastest way to build apps with Next.js and Supabase
+</p>
+
+<p align="center">
+  <a href="#features"><strong>Features</strong></a> ·
+  <a href="#demo"><strong>Demo</strong></a> ·
+  <a href="#deploy-to-vercel"><strong>Deploy to Vercel</strong></a> ·
+  <a href="#clone-and-run-locally"><strong>Clone and run locally</strong></a> ·
+  <a href="#feedback-and-issues"><strong>Feedback and issues</strong></a>
+  <a href="#more-supabase-examples"><strong>More Examples</strong></a>
+</p>
+<br/>
 
 ## Features
 
-- **Room Management**: Add, edit, and manage rooms with detailed information, including images, prices, and availability.
-- **House Management**: Manage houses and associate rooms with specific houses.
-- **User Management**: Manage renters and their profiles.
-- **Image Uploads**: Upload and manage room images using Supabase storage.
-- **Admin Dashboard**: A centralized dashboard for managing rooms, houses, and users.
-- **Analytics Reports**: View analytics and reports for better decision-making.
-- **Responsive Design**: Fully responsive UI built with Tailwind CSS.
-- **Accessibility**: Designed with accessibility in mind.
+- Works across the entire [Next.js](https://nextjs.org) stack
+  - App Router
+  - Pages Router
+  - Middleware
+  - Client
+  - Server
+  - It just works!
+- supabase-ssr. A package to configure Supabase Auth to use cookies
+- Styling with [Tailwind CSS](https://tailwindcss.com)
+- Components with [shadcn/ui](https://ui.shadcn.com/)
+- Optional deployment with [Supabase Vercel Integration and Vercel deploy](#deploy-your-own)
+  - Environment variables automatically assigned to Vercel project
 
 ## Demo
 
-Check out the live demo: [Erasmus 33 Demo](https://demo-nextjs-with-supabase.vercel.app/)
+You can view a fully working demo at [demo-nextjs-with-supabase.vercel.app](https://demo-nextjs-with-supabase.vercel.app/).
 
-## Screenshots
+## Deploy to Vercel
 
-![Admin Dashboard](https://via.placeholder.com/800x400?text=Admin+Dashboard+Screenshot)
-![Room Management](https://via.placeholder.com/800x400?text=Room+Management+Screenshot)
+Vercel deployment will guide you through creating a Supabase account and project.
 
-## Installation Guide
+After installation of the Supabase integration, all relevant environment variables will be assigned to the project so the deployment is fully functioning.
 
-Follow these steps to set up the application locally:
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&project-name=nextjs-with-supabase&repository-name=nextjs-with-supabase&demo-title=nextjs-with-supabase&demo-description=This+starter+configures+Supabase+Auth+to+use+cookies%2C+making+the+user%27s+session+available+throughout+the+entire+Next.js+app+-+Client+Components%2C+Server+Components%2C+Route+Handlers%2C+Server+Actions+and+Middleware.&demo-url=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2F&external-id=https%3A%2F%2Fgithub.com%2Fvercel%2Fnext.js%2Ftree%2Fcanary%2Fexamples%2Fwith-supabase&demo-image=https%3A%2F%2Fdemo-nextjs-with-supabase.vercel.app%2Fopengraph-image.png)
 
-### Prerequisites
+The above will also clone the Starter kit to your GitHub, you can clone that locally and develop locally.
 
-1. **Node.js**: Install [Node.js](https://nodejs.org/) (version 16 or higher recommended).
-2. **Supabase Account**: Create a Supabase account and project at [Supabase](https://supabase.com/).
-3. **Git**: Ensure Git is installed on your system.
+If you wish to just develop locally and not deploy to Vercel, [follow the steps below](#clone-and-run-locally).
 
-### Step 1: Clone the Repository
+## Clone and run locally
 
-```bash
-git clone https://github.com/your-username/erasmus-33.git
-cd erasmus-33
-```
+1. You'll first need a Supabase project which can be made [via the Supabase dashboard](https://database.new)
 
-### Step 2: Install Depencencies
+2. Create a Next.js app using the Supabase Starter template npx command
 
-```bash
-npm install
-```
+   ```bash
+   npx create-next-app --example with-supabase with-supabase-app
+   ```
 
-### Step 3: Configure Envinronment Variables
+   ```bash
+   yarn create next-app --example with-supabase with-supabase-app
+   ```
 
-1. Rename the .env.example file to .env.local:
+   ```bash
+   pnpm create next-app --example with-supabase with-supabase-app
+   ```
 
-```bash
-mv .env.example .env.local
-```
+3. Use `cd` to change into the app's directory
 
-2. Update the .env.local file with your supabase project details
+   ```bash
+   cd with-supabase-app
+   ```
 
-### Step 4: Run the Development Server
+4. Rename `.env.example` to `.env.local` and update the following:
 
-Start the local development server:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=[INSERT SUPABASE PROJECT URL]
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=[INSERT SUPABASE PROJECT API ANON KEY]
+   ```
 
-```bash
-npm run dev
-```
+   Both `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` can be found in [your Supabase project's API settings](https://app.supabase.com/project/_/settings/api)
 
-The application will be available at [http://localhost:3000](http://localhost:3000).
+5. You can now run the Next.js local development server:
 
-### Step 5: Build for Production (Optional)
+   ```bash
+   npm run dev
+   ```
 
-To create an optimized production build, run:
+   The starter kit should now be running on [localhost:3000](http://localhost:3000/).
 
-```bash
-npm run build
-```
+6. This template comes with the default shadcn/ui style initialized. If you instead want other ui.shadcn styles, delete `components.json` and [re-install shadcn/ui](https://ui.shadcn.com/docs/installation/next)
 
-You can then start the production server with:
+> Check out [the docs for Local Development](https://supabase.com/docs/guides/getting-started/local-development) to also run Supabase locally.
 
-```bash
-npm start
-```
+## Feedback and issues
 
----
+Please file feedback and issues over on the [Supabase GitHub org](https://github.com/supabase/supabase/issues/new/choose).
 
-## Technologies Used
+## More Supabase examples
 
-- **Next.js**: React framework for building server-side rendered and static web applications.
-- **Supabase**: Backend-as-a-service for authentication, database, and storage.
-- **Tailwind CSS**: Utility-first CSS framework for styling.
-- **TypeScript**: Strongly typed programming language for JavaScript.
-- **Vercel**: Deployment platform for modern web applications.
-
----
-
-## Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Commit your changes and push the branch.
-4. Open a pull request.
-
----
-
-## Feedback and Support
-
-If you encounter any issues or have feedback, please open an issue on the [GitHub repository](https://github.com/Lucascluz/erasmus-33/issues).
-````
+- [Next.js Subscription Payments Starter](https://github.com/vercel/nextjs-subscription-payments)
+- [Cookie-based Auth and the Next.js 13 App Router (free course)](https://youtube.com/playlist?list=PL5S4mPUpp4OtMhpnp93EFSo42iQ40XjbF)
+- [Supabase Auth and the Next.js App Router](https://github.com/supabase/supabase/tree/master/examples/auth/nextjs)
