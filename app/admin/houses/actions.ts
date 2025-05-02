@@ -1,46 +1,38 @@
 'use server';
 
-import { House } from '@/interfaces/house';
 import { createClient } from '@/utils/supabase/server';
+import { v4 as uuidv4 } from 'uuid';
 
-export const handleCreateHouseBase = async (
-	house: House
-): Promise<string | null> => {
+export async function uploadImagesToStorage(houseId: string, files: File[]) {
 	const supabase = await createClient();
+	const urls: string[] = [];
 
-	const { data, error } = await supabase
-		.from('houses')
-		.insert({
-			street: house.street,
-			number: house.number,
-			postal_code: house.postal_code,
-			description: house.description,
-			google_maps: house.google_maps,
-			total_rooms: house.total_rooms,
-			full_rooms: house.full_rooms,
-		})
-		.select('id')
-		.single();
+	for (const file of files) {
+		const fileName = `${houseId}/${uuidv4()}`;
+		const { error: uploadError } = await supabase.storage
+			.from('house_images')
+			.upload(fileName, file, {
+				cacheControl: '3600',
+				upsert: true,
+			});
 
-	if (error || !data?.id) {
-		console.error('Erro ao criar a casa:', error);
-		return null;
+		if (uploadError) {
+			console.error('Error uploading image:', uploadError);
+			continue;
+		}
+
+		const { data } = supabase.storage
+			.from('house_images')
+			.getPublicUrl(fileName);
+
+		if (!data) {
+			console.error('Error getting public URL:', data);
+			continue;
+		}
+
+		urls.push(data.publicUrl);
 	}
 
-	return data.id;
-};
+	return urls;
+}
 
-export const updateHouseImages = async (id: string, imageUrls: string[]) => {
-	const supabase = await createClient();
-
-	const { error } = await supabase
-		.from('houses')
-		.update({ images: imageUrls })
-		.eq('id', id);
-
-	if (error) {
-		console.error('Erro ao atualizar as imagens da casa:', error);
-	} else {
-		console.log('Imagens atualizadas com sucesso');
-	}
-};

@@ -2,105 +2,85 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { House } from '@/interfaces/house';
-import { Button, Card, CardFooter, Image, Input } from '@heroui/react';
+import { Button, Card, CardFooter, Image, Input, Spinner } from '@heroui/react';
 import ImageCropper from '../ui/image-cropper';
 import { redirect } from 'next/navigation';
 import { TrashIcon } from 'lucide-react';
+import zod from 'zod';
+import { updateHouse } from '@/app/admin/houses/edit/actions';
 import { createClient } from '@/utils/supabase/client';
-import {
-	handleCreateHouseBase,
-	updateHouseImages,
-} from '@/app/admin/houses/actions';
 
-type HouseFormProps = {
-	initialData?: House | null;
-};
+export default function HouseFormEdit({ id }: { id: string }) {
+	const supabase = createClient();
 
-export default function HouseForm({ initialData }: HouseFormProps) {
-	const [house, setHouse] = useState<House>(
-		initialData || {
-			street: '',
-			number: 0,
-			postal_code: '',
-			description: '',
-			google_maps: '',
-			total_rooms: 0,
-			full_rooms: 0,
-			images: [],
-		}
-	);
+	const [house, setHouse] = useState<House>();
 
-	const [houseImagesFiles, setHouseImagesFiles] = useState<File[]>([]);
-	const [houseImagesUrls, setHouseImagesUrls] = useState<string[]>([]);
+	const [newHouseImagesFiles, setNewHouseImageFiles] = useState<File[]>([]);
+	const [displayedImageUrls, setDisplayedImageUrls] = useState<string[]>([]);
+	const [deletedImageUrls, setDeletedImageUrls] = useState<string[]>([]);
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
-		if (initialData) {
-			setHouse(initialData);
-			setHouseImagesUrls(initialData.images);
-		}
-	}, [initialData]);
+		const fetchHouse = async () => {
+			const { data, error } = await supabase
+				.from('houses')
+				.select('*')
+				.eq('id', id)
+				.single();
+			setHouse(data);
+			setDisplayedImageUrls(data.images);
+		};
+		fetchHouse();
+	}, [id]);
 
 	const updateUi = useCallback(
 		async (file: File) => {
 			const tempUrl = URL.createObjectURL(file);
-			setHouseImagesUrls((prev) => [...prev, tempUrl]);
-			setHouseImagesFiles((prev) => [...prev, file]);
+			setDisplayedImageUrls((prev) => [...prev, tempUrl]);
+			setNewHouseImageFiles((prev) => [...prev, file]);
 		},
-		[setHouseImagesUrls, setHouseImagesFiles]
+		[setDisplayedImageUrls, setNewHouseImageFiles]
 	);
 
-	async function uploadImagesToStorage(id: string, files: File[]) {
-		const supabase = await createClient();
-
-		const urls: string[] = [];
-
-		for (let i = 0; i < files.length; i++) {
-			const file = files[i];
-			const { data, error } = await supabase.storage
-				.from('house_images')
-				.upload(`${id}/${i}`, file, { upsert: true });
-
-			if (error) {
-				console.error('Erro ao subir imagem:', error);
-				continue;
-			}
-
-			const { data: publicUrlData } = supabase.storage
-				.from('house_images')
-				.getPublicUrl(`${id}/${i}`);
-
-			if (publicUrlData?.publicUrl) {
-				urls.push(publicUrlData.publicUrl);
-			}
-		}
-
-		return urls;
-	}
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		setLoading(true);
 		e.preventDefault();
 
-		// 1. Cria a casa
-		const houseId = await handleCreateHouseBase(house);
-		if (!houseId) {
-			alert('Erro ao criar a casa');
+		// Vailidate the form
+		const schema = zod.object({
+			street: zod.string().min(1, 'Street is required'),
+			number: zod.number().min(1, 'Number is required'),
+			postal_code: zod.string().min(1, 'Postal code is required'),
+			total_rooms: zod.number().min(1, 'Total rooms is required'),
+			description: zod.string().min(1, 'Description is required'),
+		});
+		const result = schema.safeParse(house);
+		
+		
+		// Update the house
+		if (house) {
+			await updateHouse(house, newHouseImagesFiles, deletedImageUrls);
+		} else {
+			console.error('House is undefined');
+			setLoading(false);
 			return;
 		}
-
-		// 2. Faz upload das imagens
-		const urls = await uploadImagesToStorage(houseId, houseImagesFiles);
-
-		// 3. Atualiza a casa com as URLs
-		await updateHouseImages(houseId, urls);
-
-		// 4. Redireciona
 		redirect('/admin');
 	};
+
+	if (loading || !house) {
+		return (
+			<div className='flex items-center justify-center h-screen'>
+				<Spinner size='lg' color='primary' />
+			</div>
+		);
+	}
 
 	return (
 		<Card className='p-4'>
 			<form className='space-y-4' onSubmit={handleSubmit}>
-				<div className='grid grid-cols-4 gap-4'>
+				<div className='grid grid-cols-2 gap-4'>
 					<Input
 						type='text'
 						label='Street'
@@ -145,7 +125,7 @@ export default function HouseForm({ initialData }: HouseFormProps) {
 				/>
 				<ImageCropper aspectRatio='16/9' callback={updateUi} />
 				<div className='grid grid-cols-4 gap-4'>
-					{houseImagesUrls.map((image, index) => (
+					{displayedImageUrls.map((image, index) => (
 						<Card key={index} className='w-full overflow-hidde items-end'>
 							<Image
 								src={image}
@@ -156,8 +136,9 @@ export default function HouseForm({ initialData }: HouseFormProps) {
 							<TrashIcon
 								className='h-5 w-5 m-2 hover:text-danger cursor-pointer'
 								onClick={() => {
-									setHouseImagesUrls((prev) => prev.filter((_, i) => i !== index));
-									setHouseImagesFiles((prev) => prev.filter((_, i) => i !== index));
+									setHouse({ ...house, images: house.images.filter((_, i) => i !== index) });
+									setDeletedImageUrls((prev) => [...prev, image]);
+									setDisplayedImageUrls((prev) => prev.filter((_, i) => i !== index));
 								}}
 							/>
 						</Card>

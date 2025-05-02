@@ -15,6 +15,7 @@ import {
 } from '@heroui/react';
 import { SignUpFormData } from '@/interfaces/signup';
 import { placeHolders } from '@/assets/images';
+import { redirect } from 'next/navigation';
 
 export default function SignUpForm() {
 	const [formData, setFormData] = useState<SignUpFormData>({
@@ -77,7 +78,11 @@ export default function SignUpForm() {
 			if (value) payload.append(key, value);
 		});
 
-		await signUpAction(payload);
+		const result = await signUpAction(payload);
+
+		if(result.success){
+			redirect('sign-up/success');
+		}
 	};
 
 	return (
@@ -110,7 +115,7 @@ export default function SignUpForm() {
 							/>
 							<Input
 								label='Phone Number'
-								type='text'
+								type='phone_number'
 								name='phone_number'
 								value={formData.phone_number}
 								onChange={handleChange}

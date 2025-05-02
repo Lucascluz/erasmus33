@@ -74,10 +74,10 @@ export const signUpAction = async (formData: FormData) => {
 	// Build and insert profile
 	const profile: Profile = {
 		user_id: userId,
+		email,
 		first_name: formData.get('first_name')?.toString() ?? '',
 		last_name: formData.get('last_name')?.toString() ?? '',
 		phone_number: formData.get('phone_number')?.toString() ?? '',
-		email,
 		picture_url: pictureUrl,
 		country: formData.get('country')?.toString() ?? '',
 		preferred_language: (formData.get('preferred_language')?.toString() ??
@@ -98,9 +98,5 @@ export const signUpAction = async (formData: FormData) => {
 		);
 	}
 
-	return encodedRedirect(
-		'success',
-		'/sign-up',
-		'Thanks for signing up! Please check your email for a verification link.'
-	);
+	return { success: true };
 };

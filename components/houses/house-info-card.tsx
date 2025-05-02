@@ -31,7 +31,7 @@ export default function HouseInfoCard({ house }: { house: House }) {
 				<Button
 					variant='bordered'
 					className='mt-4'
-					onPress={() => window.open(house.google_maps, '_blank')}>
+					onPress={() => console.log(house.google_maps)}>
 					Ver no Google Maps
 				</Button>
 			</Card>

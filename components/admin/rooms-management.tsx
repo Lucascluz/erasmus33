@@ -13,9 +13,12 @@ import {
 } from '@heroui/react';
 import { CheckIcon, EyeIcon, PencilIcon, Trash, XIcon } from 'lucide-react';
 import { Room } from '@/interfaces/room';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 
 export default function RoomsManagement({ rooms }: { rooms: Room[] }) {
+
+	const router = useRouter();
+
 	return (
 		<Card className='w-full p-2'>
 			<CardHeader className='flex justify-between'>
@@ -57,16 +60,12 @@ export default function RoomsManagement({ rooms }: { rooms: Room[] }) {
 								<TableCell className='text-center'>
 									<div className='flex gap-4 justify-center'>
 										<EyeIcon
-											className='h-5 w-5 text-accent cursor-pointer'
-											onClick={() => {
-												redirect(`/protected/rooms/${room.id}`);
-											}}
+											className='h-5 w-5 hover:text-primary cursor-pointer'
+											onClick={() => redirect(`/protected/rooms/${room.id}`)}
 										/>
 										<PencilIcon
-											className='h-5 w-5 text-primary cursor-pointer'
-											onClick={() => {
-												redirect(`/admin/rooms/${room.id}/edit`);
-											}}
+											className='h-5 w-5 cursor-pointer hover:text-primary'
+											onClick={() => router.push(`/admin/rooms/edit/${room.id}`)}
 										/>
 									</div>
 								</TableCell>

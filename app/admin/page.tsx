@@ -1,6 +1,5 @@
 import React from 'react';
 import ManagementTabs from '@/components/admin/management-tabs';
-import AnalyticsReports from '@/components/admin/analytics-reports';
 import { createClient } from '@/utils/supabase/server';
 import { Card, CardBody, CardHeader } from '@heroui/react';
 import { Profile } from '@/interfaces/profile';

@@ -30,7 +30,7 @@ export default function RoomInfoCard({ room }: { room: Room }) {
 					<p className='text-sm'>{room.description}</p>
 				</div>
 			</Card>
-			<Card className='rounded-2xl shadow-xl p-6 space-y-2'>
+			<Card className='items-center rounded-2xl shadow-xl p-4 space-y-2'>
 				<div className='text-lg font-bold text-primary'>€{room.price} / mês</div>
 				<p className='text-xs text-gray-600'>Contas não inclusas</p>
 				<Button className='w-full'>Solicitar Aluguel</Button>

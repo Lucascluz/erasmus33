@@ -5,7 +5,7 @@ export interface Room {
 	house_number: number;
 	price: number;
 	description: string;
-	type: string | 'single' | 'shared';
+	type: string | 'single' | 'double' | 'triple' | 'quad'; // Default type
 	beds: number;
 	renters: string[];
 	is_available: boolean;

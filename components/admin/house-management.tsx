@@ -55,13 +55,13 @@ export default function HouseManagement({ houses }: { houses: House[] }) {
 										<EyeIcon
 											className='h-5 w-5 hover:text-primary cursor-pointer'
 											onClick={() => {
-												redirect(`/admin/houses/${house.id}`);
+												redirect(`/protected/houses`);
 											}}
 										/>
 										<PencilIcon
 											className='h-5 w-5 hover:text-primary cursor-pointer'
 											onClick={() => {
-												redirect(`/admin/houses/${house.id}/edit`);
+												redirect(`/admin/houses/edit/${house.id}`);
 											}}
 										/>
 									</div>

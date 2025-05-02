@@ -17,11 +17,11 @@ export default function RoomGallery({ images }: RoomGalleryProps) {
 					src={selected}
 					alt='Imagem do quarto'
 					className='object-cover w-full h-full'
-          width={1920}
+					width={1920}
 				/>
 			</div>
 
-			<div className='flex mt-2 gap-2 aspect-video justify-start'>
+			<div className='mt-2 gap-2 justify-start flex flex-wrap'>
 				{images.map((img, index) => (
 					<Image
 						isZoomed
@@ -29,7 +29,7 @@ export default function RoomGallery({ images }: RoomGalleryProps) {
 						src={img}
 						alt={`Imagem ${index + 1}`}
 						width={176}
-						className='object-cover cursor-pointer'
+						className='cursor-pointer'
 						onClick={() => setSelected(img)}
 					/>
 				))}
