@@ -11,7 +11,7 @@ import {
 	TableCell,
 	Button,
 } from '@heroui/react';
-import { CheckIcon, EyeIcon, PencilIcon, XIcon } from 'lucide-react';
+import { EyeIcon, PencilIcon, PlusIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { House } from '@/interfaces/house';
 
@@ -22,10 +22,11 @@ export default function HouseManagement({ houses }: { houses: House[] }) {
 				<h3 className='text-lg font-semibold'>House Management</h3>
 				<Button
 					color='primary'
+					startContent={<PlusIcon className='h-5 w-5'/>}
 					onPress={() => {
 						redirect('/admin/houses/new');
 					}}>
-					Add New House
+					New House
 				</Button>
 			</CardHeader>
 			<CardBody>
@@ -33,8 +34,6 @@ export default function HouseManagement({ houses }: { houses: House[] }) {
 					<TableHeader>
 						<TableColumn className='text-center'>STREET</TableColumn>
 						<TableColumn className='text-center'>NUMBER</TableColumn>
-						<TableColumn className='text-center'>ROOMS</TableColumn>
-						<TableColumn className='text-center'>VACANCIES</TableColumn>
 						<TableColumn className='text-center'>RENTING</TableColumn>
 					</TableHeader>
 					<TableBody>
@@ -42,14 +41,6 @@ export default function HouseManagement({ houses }: { houses: House[] }) {
 							<TableRow key={house.id} className='items-center'>
 								<TableCell className='text-center'>{house.street}</TableCell>
 								<TableCell className='text-center'>{house.number}</TableCell>
-								<TableCell className='text-center'>{house.total_rooms}</TableCell>
-								<TableCell className='text-center align-middle'>
-									{house.total_rooms - house.full_rooms > 0 ? (
-										<CheckIcon className='text-success mx-auto' />
-									) : (
-										<XIcon className='text-danger mx-auto' />
-									)}
-								</TableCell>
 								<TableCell className='text-center'>
 									<div className='flex gap-4 justify-center'>
 										<EyeIcon

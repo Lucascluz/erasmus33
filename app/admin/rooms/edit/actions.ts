@@ -27,15 +27,52 @@ export async function updateRoom(room: Room, newRoomImagesFiles: File[], deleted
         throw roomError;
     }
 
-    // Delete deleted images from storage
-    for (const imageUrl of deletedImageUrls) {
-        const { error: deleteError } = await supabase.storage
-            .from('rooms')
-            .remove([imageUrl]);
 
-        if (deleteError) {
-            console.error('Error deleting image:', deleteError);
-        }
+    // Extract the file paths from the URLs
+    const deletedImagePaths = deletedImageUrls.map((url) => {
+        const urlParts = url.split('/');
+        return room.id + "/" + urlParts[urlParts.length - 1];
+    });
+
+    // Delete deleted images from storage
+    const { error: deleteError } = await supabase.storage
+        .from('room_images')
+        .remove(deletedImagePaths);
+
+    if (deleteError) {
+        console.error('Error deleting images:', deleteError);
+        throw deleteError;
+    }
+}
+
+export async function deleteRoom(room: Room) {
+    const supabase = await createClient();
+
+    // Delete room from database
+    const { error: roomError } = await supabase
+        .from('rooms')
+        .delete()
+        .eq('id', room.id);
+
+    if (roomError) {
+        console.error('Error deleting room:', roomError);
+        throw roomError;
+    }
+
+    // Extract the file paths from the URLs
+    const deletedImagePaths = room.images.map((url) => {
+        const urlParts = url.split('/');
+        return room.id + "/" + urlParts[urlParts.length - 1];
+    });
+
+    // Delete deleted images from storage
+    const { error: deleteError } = await supabase.storage
+        .from('room_images')
+        .remove(deletedImagePaths);
+
+    if (deleteError) {
+        console.error('Error deleting images:', deleteError);
+        throw deleteError;
     }
 }
 

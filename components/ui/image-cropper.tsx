@@ -11,6 +11,7 @@ import { Button } from '@heroui/button';
 import { Modal, ModalBody, ModalContent } from '@heroui/react';
 import { ArrowUpIcon } from '@heroicons/react/24/solid';
 import 'react-image-crop/dist/ReactCrop.css'; // Ensure this is imported
+import { UploadIcon } from 'lucide-react';
 
 const MIN_DIMENSION = 150;
 
@@ -114,13 +115,13 @@ const ImageCropper = ({
 	return (
 		<>
 			<Button
-				className='text-tiny text-white bg-black/20'
-				color='default'
+				color='secondary'
 				radius='lg'
 				size='sm'
 				variant='flat'
+				startContent={<UploadIcon className='h-5 w-5' />}
 				onPress={() => setIsModalOpen(true)}>
-				<ArrowUpIcon />
+				Upload Image
 			</Button>
 			<Modal isOpen={isModalOpen} size='lg' onClose={() => setIsModalOpen(false)}>
 				<ModalContent>

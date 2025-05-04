@@ -3,7 +3,7 @@ import { type Room } from '@/interfaces/room';
 
 export default function RoomInfoCard({ room }: { room: Room }) {
 	return (
-		<div className='mb-6 flex flex-col gap-4'>
+		<div className='flex flex-col gap-4'>
 			<Card className='rounded-2xl shadow-xl p-4 space-y-2'>
 				<CardHeader className='flex flex-col text-sm font-bold'>
 					<div className='flex justify-between items-center gap-2'>

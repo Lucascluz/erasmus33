@@ -1,7 +1,7 @@
 'use client'
 
-import BackButton from '@/components/back-button';
-import HouseFormEdit from '@/components/houses/house-form-edit';
+import BackButton from '@/components/admin/back-button';
+import HouseFormEdit from '@/components/houses/house-edit-form';
 import { useParams } from 'next/navigation';
 
 export default function HouseNewPage() {

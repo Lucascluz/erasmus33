@@ -11,7 +11,7 @@ import {
 	TableCell,
 	Button,
 } from '@heroui/react';
-import { CheckIcon, EyeIcon, PencilIcon, Trash, XIcon } from 'lucide-react';
+import { CheckIcon, EyeIcon, PencilIcon, PlusIcon, Trash, XIcon } from 'lucide-react';
 import { Room } from '@/interfaces/room';
 import { redirect, useRouter } from 'next/navigation';
 
@@ -25,10 +25,11 @@ export default function RoomsManagement({ rooms }: { rooms: Room[] }) {
 				<h3 className='text-lg font-semibold'>Rooms Management</h3>
 				<Button
 					color='primary'
+					startContent={<PlusIcon className='h-5 w-5' />}
 					onPress={() => {
 						redirect('/admin/rooms/new');
 					}}>
-					Add New Room
+					New Room
 				</Button>
 			</CardHeader>
 			<CardBody>

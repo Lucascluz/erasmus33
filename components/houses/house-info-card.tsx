@@ -21,20 +21,6 @@ export default function HouseInfoCard({ house }: { house: House }) {
 					<p className='text-sm'>{house.description}</p>
 				</div>
 			</Card>
-			<Card className='rounded-2xl shadow-xl p-6'>
-				<div className='flex flex-col gap-2'>
-					<label className='text-sm text-muted-foreground font-bold'>
-						Endereço:
-					</label>
-					<p className='text-sm'>{`${house.street} ${house.number}`}</p>
-				</div>
-				<Button
-					variant='bordered'
-					className='mt-4'
-					onPress={() => console.log(house.google_maps)}>
-					Ver no Google Maps
-				</Button>
-			</Card>
 		</div>
 	);
 }

@@ -11,7 +11,6 @@ export async function updateHouse(house: House, newHouseImagesFiles: File[], del
     if (!house.id) {
         throw new Error("House ID is undefined");
     }
-
     const urls = await uploadImagesToStorage(house.id, newHouseImagesFiles);
 
     // Update house in database
@@ -28,23 +27,52 @@ export async function updateHouse(house: House, newHouseImagesFiles: File[], del
         throw houseError;
     }
 
+
+    // Extract the file paths from the URLs
+    const deletedImagePaths = deletedImageUrls.map((url) => {
+        const urlParts = url.split('/');
+        return house.id + "/" + urlParts[urlParts.length - 1];
+    });
+
     // Delete deleted images from storage
-    let filesToDelete: string[] = [];
-
-    // Loop through the deleted image URLs and extract the file names
-    for (const imageUrl of deletedImageUrls) {
-        // Extract the file name from the URL
-        const filePath = imageUrl.split('/').slice(-2).join('/');
-        filesToDelete.push(filePath);
-    }
-
-    // Remove the files from storage
     const { error: deleteError } = await supabase.storage
         .from('houses')
-        .remove(filesToDelete);
+        .remove(deletedImagePaths);
 
     if (deleteError) {
-        console.error('Error deleting image:', deleteError);
+        console.error('Error deleting images:', deleteError);
+        throw deleteError;
+    }
+}
+
+export async function deleteHouse(house: House) {
+    const supabase = await createClient();
+
+    // Delete house from database
+    const { error: houseError } = await supabase
+        .from('houses')
+        .delete()
+        .eq('id', house.id);
+
+    if (houseError) {
+        console.error('Error deleting house:', houseError);
+        throw houseError;
+    }
+
+    // Extract the file paths from the URLs
+    const deletedImagePaths = house.images.map((url) => {
+        const urlParts = url.split('/');
+        return house.id + "/" + urlParts[urlParts.length - 1];
+    });
+
+    // Delete deleted images from storage
+    const { error: deleteError } = await supabase.storage
+        .from('house_images')
+        .remove(deletedImagePaths);
+
+    if (deleteError) {
+        console.error('Error deleting images:', deleteError);
+        throw deleteError;
     }
 }
 

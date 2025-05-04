@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { House } from '@/interfaces/house';
-import { Button, Card, CardFooter, Image, Input, Spinner } from '@heroui/react';
-import ImageCropper from '../ui/image-cropper';
+import { Button, Card, CardFooter, Image, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner } from '@heroui/react';
 import { redirect } from 'next/navigation';
 import { TrashIcon } from 'lucide-react';
-import zod from 'zod';
-import { updateHouse } from '@/app/admin/houses/edit/actions';
+import { deleteHouse, updateHouse } from '@/app/admin/houses/edit/actions';
 import { createClient } from '@/utils/supabase/client';
+import ImageCropper from '../ui/image-cropper';
+import zod from 'zod';
 
 export default function HouseFormEdit({ id }: { id: string }) {
 	const supabase = createClient();
@@ -42,7 +42,6 @@ export default function HouseFormEdit({ id }: { id: string }) {
 		[setDisplayedImageUrls, setNewHouseImageFiles]
 	);
 
-
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		setLoading(true);
 		e.preventDefault();
@@ -56,8 +55,12 @@ export default function HouseFormEdit({ id }: { id: string }) {
 			description: zod.string().min(1, 'Description is required'),
 		});
 		const result = schema.safeParse(house);
-		
-		
+		if (!result.success) {
+			console.error(result.error.format());
+			setLoading(false);
+			return;
+		}
+
 		// Update the house
 		if (house) {
 			await updateHouse(house, newHouseImagesFiles, deletedImageUrls);
@@ -69,9 +72,16 @@ export default function HouseFormEdit({ id }: { id: string }) {
 		redirect('/admin');
 	};
 
-	if (loading || !house) {
+	const handleDelete = async () => {
+		setLoading(true);
+		await deleteHouse(house!);
+		redirect('/admin');
+	}
+
+
+	if (!house) {
 		return (
-			<div className='flex items-center justify-center h-screen'>
+			<div className='flex justify-center h-screen'>
 				<Spinner size='lg' color='primary' />
 			</div>
 		);
@@ -86,13 +96,9 @@ export default function HouseFormEdit({ id }: { id: string }) {
 						label='Street'
 						value={house.street}
 						onChange={(e) => {
-							const mapsAddress = e.target.value
-								.replace(/\s+/g, '+')
-								.concat(`+${house.number}`);
 							setHouse({
 								...house,
 								street: e.target.value,
-								google_maps: `https://www.google.com/maps/place/${mapsAddress}`,
 							});
 						}}
 					/>
@@ -145,18 +151,49 @@ export default function HouseFormEdit({ id }: { id: string }) {
 					))}
 				</div>
 				<CardFooter className='flex justify-between'>
-					<Button className='p-2' color='primary' type='submit'>
+					<Button className='p-2' color='primary' type='submit' isLoading={loading}>
 						Submit
 					</Button>
-					<Button
-						className='p-2'
-						color='danger'
-						type='button'
-						onPress={() => redirect('/admin')}>
-						Cancel
-					</Button>
+					<HouseDeleteModal onDelete={handleDelete} />
 				</CardFooter>
 			</form>
 		</Card>
 	);
+}
+
+const HouseDeleteModal = ({ onDelete }: { onDelete: () => void }) => {
+
+	const [isLoading, setIsLoading] = useState(false);
+	const [isOpen, setIsOpen] = useState(false);
+
+	return (
+		<>
+			<Button
+				className='p-2'
+				color='danger'
+				type='button'
+				isLoading={isLoading}
+				disabled={isLoading}
+				endContent={<TrashIcon className='h-5 w-5' />}
+				onPress={() => setIsOpen(true)} />
+
+			<Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size='lg'>
+				<ModalContent className='max-w-2xl'>
+					<ModalHeader>Delete House</ModalHeader>
+					<ModalBody className='flex flex-col items-center'>
+						<p>Are you sure you want to delete this house?</p>
+						<p>This action cannot be undone.</p>
+					</ModalBody>
+					<ModalFooter className='flex justify-between'>
+						<Button color='primary' onPress={() => setIsOpen(false)}>
+							Cancel
+						</Button>
+						<Button color='danger' onPress={onDelete}>
+							Sure
+						</Button>
+					</ModalFooter>
+				</ModalContent>
+			</Modal>
+		</>
+	)
 }

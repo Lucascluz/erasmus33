@@ -6,10 +6,6 @@ import { createClient } from '@/utils/supabase/client';
 import RoomGallery from '@/components/rooms/room-gallery';
 import RoomInfoCard from '@/components/rooms/room-info-card';
 import { Room } from '@/interfaces/room';
-import { Button } from '@heroui/react';
-import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import BackButton from '@/components/back-button';
 
 export default function RoomViewPage() {
 
@@ -50,8 +46,7 @@ export default function RoomViewPage() {
 
 	return (
 		<>
-			<BackButton />
-			<div className='mx-auto my-auto grid grid-cols-1 lg:grid-cols-4 gap-6'>
+			<div className='mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6'>
 				<div className='lg:col-span-3 xl:col-span-3'>
 					<RoomGallery images={room.images} />
 				</div>
