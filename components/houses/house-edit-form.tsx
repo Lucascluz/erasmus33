@@ -106,21 +106,18 @@ export default function HouseFormEdit({ id }: { id: string }) {
 						type='number'
 						label='Number'
 						value={house.number.toString()}
-						onChange={(e) => setHouse({ ...house, number: Number(e.target.value) })}
+						onChange={(e) => {
+							console.log(typeof e.target.value);
+							console.log(typeof Number(e.target.value));
+							setHouse({ ...house, number: Number(e.target.value) })
+						}
+						}
 					/>
 					<Input
 						type='text'
 						label='Postal Code'
 						value={house.postal_code}
 						onChange={(e) => setHouse({ ...house, postal_code: e.target.value })}
-					/>
-					<Input
-						type='number'
-						label='Total Rooms'
-						value={house.total_rooms.toString()}
-						onChange={(e) =>
-							setHouse({ ...house, total_rooms: Number(e.target.value) })
-						}
 					/>
 				</div>
 				<Input
@@ -163,7 +160,6 @@ export default function HouseFormEdit({ id }: { id: string }) {
 
 const HouseDeleteModal = ({ onDelete }: { onDelete: () => void }) => {
 
-	const [isLoading, setIsLoading] = useState(false);
 	const [isOpen, setIsOpen] = useState(false);
 
 	return (
@@ -172,8 +168,6 @@ const HouseDeleteModal = ({ onDelete }: { onDelete: () => void }) => {
 				className='p-2'
 				color='danger'
 				type='button'
-				isLoading={isLoading}
-				disabled={isLoading}
 				endContent={<TrashIcon className='h-5 w-5' />}
 				onPress={() => setIsOpen(true)} />
 

@@ -1,11 +1,14 @@
-'use client';
-
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { createClient } from '@/utils/supabase/client';
 import { House } from '@/interfaces/house';
+import { createHouse } from '@/app/admin/houses/new/actions';
+import { deleteHouse, updateHouse } from '@/app/admin/houses/edit/actions';
+import { redirect } from 'next/navigation';
+import { uploadImagesToStorage } from '@/app/admin/houses/actions';
 import { v4 } from 'uuid';
 import { z } from 'zod';
 
-const emptyHouse: House = {
+const defaultHouse: House = {
 	id: v4(),
 	street: '',
 	number: 0,
@@ -14,55 +17,120 @@ const emptyHouse: House = {
 	images: [],
 };
 
-const houseSchema = z.object({
-	street: z.string().min(1, 'Street is required'),
-	number: z.number().min(1, 'Number is required'),
-	postal_code: z.string().min(1, 'Postal code is required'),
-	description: z.string().min(1, 'Description is required'),
-	images: z.array(z.string()).optional(),
-	full_rooms: z.number().optional(),
-});
-
-export const useHouseForm = () => {
-	const [house, setHouse] = useState<House>(emptyHouse);
-	const [houseImagesFiles, setHouseImagesFiles] = useState<File[]>([]);
+export function useHouseForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
+	const supabase = createClient();
+	const [house, setHouse] = useState<House>(defaultHouse);
 	const [displayedImageUrls, setDisplayedImageUrls] = useState<string[]>([]);
+	const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+	const [newImageUrls, setNewImageUrls] = useState<string[]>([]);
+	const [deletedImageUrls, setDeletedImageUrls] = useState<string[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
+	const [hasLoaded, setHasLoaded] = useState(mode === 'create');
 
-	const updateUi = useCallback((file: File) => {
+	useEffect(() => {
+		if (mode === 'edit' && id) {
+			const fetchHouse = async () => {
+				const { data, error } = await supabase
+					.from('houses')
+					.select('*')
+					.eq('id', id)
+					.single();
+				if (error) {
+					console.error('Error fetching house:', error);
+					return;
+				}
+				if (!data) {
+					console.error('No house found with the given ID');
+					return;
+				}
+				setHouse({ ...data, number: Number(data.number) });
+				setDisplayedImageUrls(data.images || []);
+				setHasLoaded(true);
+			};
+			fetchHouse();
+		}
+	}, [id, supabase]);
+
+	const handleImageAdd = useCallback((file: File) => {
 		const tempUrl = URL.createObjectURL(file);
 		setDisplayedImageUrls((prev) => [...prev, tempUrl]);
-		setHouseImagesFiles((prev) => [...prev, file]);
+		setNewImageFiles((prev) => [...prev, file]);
 	}, []);
 
-	const removeImage = (url: string) => {
-		setDisplayedImageUrls((prev) => prev.filter((image) => image !== url));
-		setHouseImagesFiles((prev) => prev.filter((file) => file.name !== url.split('/').pop()));
+	const handleImageRemove = useCallback((index: number) => {
+		setDeletedImageUrls((prev) => [...prev, displayedImageUrls[index]]);
+		setDisplayedImageUrls((prev) => prev.filter((_, i) => i !== index));
+		setHouse((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
+	}, [displayedImageUrls]);
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setLoading(true);
+
+		setHouse((prev) => ({ ...prev, number: Number(prev.number) }));
+
+		// Validate the house object before proceeding
+		if (!validateHouse(house)) {
+			setLoading(false);
+			return;
+		}
+
+		// Check is there are any new images to upload
+		if (newImageFiles.length > 0) {
+			setNewImageUrls(await uploadImagesToStorage(house.id, newImageFiles));
+		}
+
+		if (mode === 'create') {
+			await createHouse(house, newImageUrls);
+		} else if (mode === 'edit') {
+			await updateHouse(house, newImageUrls, deletedImageUrls);
+		}
+
+		redirect('/admin');
 	};
 
-	const validate = () => {
-        try {
-            houseSchema.parse(house);
-            return true;
-        } catch (error) {
-            if (error instanceof z.ZodError) {
-                setError(error.errors[0].message);
-            }
-            return false;
-        }
-    };
+	const handleDelete = async () => {
+		setLoading(true);
+		await deleteHouse(house);
+		redirect('/admin');
+	};
 
 	return {
 		house,
-		houseImagesFiles,
-		displayedImageUrls,
+		hasLoaded,
 		loading,
-		error,
+		displayedImageUrls,
 		setHouse,
-		removeImage,
-		updateUi,
-		setLoading,
-		validate,
+		handleImageAdd,
+		handleImageRemove,
+		handleSubmit,
+		handleDelete,
 	};
-};
+}
+
+const validateHouse = (house: House) => {
+	// Verify that the house object has the required properties
+	if (!house.street || !house.number || !house.postal_code) {
+		console.error('Validation error: Missing required properties');
+		return false;
+	}
+
+	const houseSchema = z.object({
+		id: z.string().uuid(),
+		street: z.string().min(1, 'Street is required'),
+		number: z.number().min(1, 'Number is required'),
+		postal_code: z.string().min(1, 'Postal code is required'),
+		description: z.string().optional(),
+		images: z.array(z.string()).optional(),
+	});
+
+	const parsedHouse = houseSchema.safeParse(house);
+	if (!parsedHouse.success) {
+		console.log('House', house)
+		parsedHouse.error.errors.forEach((error) => {
+			console.error('Validation error:', parsedHouse.error.errors);
+		});
+		return false;
+	}
+	return true;
+}

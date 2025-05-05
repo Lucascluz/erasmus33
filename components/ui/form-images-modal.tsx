@@ -8,7 +8,7 @@ export const FormImagesModal = ({ images, onRemoveImage }: { images: string[], o
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     return (
-        <div className='grid grid-cols-4 gap-4'>
+        <div className='grid grid-cols-4 gap-4 py-4'>
             {images.map((image, index) => (
                 <Card key={index} className='w-full overflow-hidden items-end' isPressable onPress={() => {
                     console.log(image);

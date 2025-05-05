@@ -6,7 +6,7 @@ export const roomTypes = [
 ]
 
 export interface Room {
-	id?: string; //uuid
+	id: string; //uuid
 	number: number;
 	house_id: string; //uuid
 	house_number: number;

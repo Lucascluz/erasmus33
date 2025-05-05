@@ -1,4 +1,5 @@
 import BackButton from '@/components/admin/back-button';
+import HouseForm from '@/components/houses/house-form';
 import HouseFormNew from '@/components/houses/house-new-form';
 
 export default async function HouseNewPage() {
@@ -8,7 +9,7 @@ export default async function HouseNewPage() {
 				<BackButton />
 				<h1 className='text-3xl font-bold'>New House</h1>
 			</div>
-			<HouseFormNew />
+			<HouseForm mode={'create'} />
 		</div>
 	);
 }

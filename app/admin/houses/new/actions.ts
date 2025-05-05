@@ -4,13 +4,12 @@ import { House } from "@/interfaces/house";
 import { uploadImagesToStorage } from "../actions";
 import { createClient } from "@/utils/supabase/server";
 
-export async function createHouse(house: House, houseImagesFiles: File[]) {
+export async function createHouse(house: House, houseImagesUrls?: string[]) {
 
-    // Upload images to storage and get URLs
+    // Update images in storage and get URLs
     if (!house.id) {
-        throw new Error("House ID is required to upload images.");
+        throw new Error("House ID is undefined");
     }
-    const urls = await uploadImagesToStorage(house.id, houseImagesFiles);
 
     // Create the house record in the database
     const supabase = await createClient();
@@ -18,7 +17,7 @@ export async function createHouse(house: House, houseImagesFiles: File[]) {
         .from("houses")
         .insert({
             ...house,
-            images: urls,
+            images: houseImagesUrls,
         })
         .select("*")
         .single();

@@ -1,7 +1,7 @@
 'use client'
 
 import BackButton from '@/components/admin/back-button';
-import RoomFormEdit from '@/components/rooms/room-edit-form';
+import RoomForm from '@/components/rooms/room-form';
 import { useParams } from 'next/navigation';
 
 export default function RoomEditPage() {
@@ -14,7 +14,7 @@ export default function RoomEditPage() {
 				<BackButton />
 				<h1 className='text-3xl font-bold'>Editing Room</h1>
 			</div>
-			<RoomFormEdit id={id} />
+			<RoomForm mode='edit' id={id} />
 		</div>
 	);
 }

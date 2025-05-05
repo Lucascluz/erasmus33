@@ -1,99 +1,183 @@
-'use client';
-
-import { useState, useCallback, useEffect } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { z } from 'zod';
-import { Room, roomTypes } from '@/interfaces/room';
+import { Room } from '@/interfaces/room';
+import { createRoom } from '@/app/admin/rooms/new/actions';
+import { deleteRoom, updateRoom } from '@/app/admin/rooms/edit/actions';
+import { redirect } from 'next/navigation';
+import { uploadImagesToStorage } from '@/app/admin/rooms/actions';
 import { v4 } from 'uuid';
+import { z } from 'zod';
 
-const emptyRoom: Room = {
+const roomTypes = [
+	{ value: 'single', beds: 1 },
+	{ value: 'double', beds: 2 },
+	{ value: 'triple', beds: 3 },
+	{ value: 'quadruple', beds: 4 },
+	{ value: 'suite', beds: 2 },
+]
+
+const defaultRoom: Room = {
 	id: v4(),
 	number: 0,
-	price: 150,
-	type: 'single',
 	house_id: '',
 	house_number: 0,
+	price: 0,
 	description: '',
+	type: 'single',
 	beds: 1,
-	images: [],
 	renters: [],
-	is_available: true
+	is_available: true,
+	images: [],
 };
 
-export const useRoomForm = () => {
+export function useRoomForm({ mode, id }: { mode: 'create' | 'edit'; id?: string }) {
 	const supabase = createClient();
-
-	const [room, setRoom] = useState<Room>(emptyRoom);
-	const [roomImagesFiles, setRoomImagesFiles] = useState<File[]>([]);
-	const [roomImagesUrls, setRoomImagesUrls] = useState<string[]>([]);
-	const [housesData, setHousesData] = useState<any[]>([]);
+	const [room, setRoom] = useState<Room>(defaultRoom);
+	const [housesData, setHousesData] = useState<{ id: string; number: number }[]>([]);
+	const [displayedImageUrls, setDisplayedImageUrls] = useState<string[]>([]);
+	const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+	const [newImageUrls, setNewImageUrls] = useState<string[]>([]);
+	const [deletedImageUrls, setDeletedImageUrls] = useState<string[]>([]);
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
-	const roomSchema = z.object({
-		number: z.number().min(1, 'Room number must be greater than 0'),
-		price: z.number().min(0, 'Price must be greater than or equal to 0'),
-		type: z.string().refine((type) => roomTypes.some((t) => t.id === type), {
-			message: 'Invalid room type',
-		}),
-		beds: z.number().refine(
-			(beds) => beds === roomTypes.find((type) => type.id === room.type)?.beds,
-			{
-				message: 'Number of beds must correspond to the selected room type',
-			}
-		),
-		house_id: z.string(),
-		house_number: z.number(),
-		description: z.string().max(500, 'Description is too long'),
-	});
+	const [hasLoaded, setHasLoaded] = useState(mode === 'create');
 
 	useEffect(() => {
 		const fetchHousesData = async () => {
-			const { data, error } = await supabase.from('houses').select('id, number');
+			const { data, error } = await supabase
+				.from('houses')
+				.select('id, number')
+				.order('number', { ascending: true });
 			if (error) {
 				console.error('Error fetching houses:', error);
-				setError('Failed to fetch houses data.');
-			} else {
-				setHousesData(data);
+				return;
 			}
-		};
+			if (!data) {
+				console.error('No houses found');
+				return;
+			}
+			// Check if the data is an array and has the expected structure
+			if (!Array.isArray(data) || !data.every((item) => item.id && item.number)) {
+				console.error('Invalid houses data:', data);
+				return;
+			}
+
+			setHousesData(data || []);
+		}
+
 		fetchHousesData();
-	}, []);
 
-	const updateImagePreview = useCallback((file: File) => {
+		if (mode === 'edit' && id) {
+			const fetchRoom = async () => {
+				const { data, error } = await supabase
+					.from('rooms')
+					.select('*')
+					.eq('id', id)
+					.single();
+				if (error) {
+					console.error('Error fetching room:', error);
+					return;
+				}
+				if (!data) {
+					console.error('No room found with the given ID');
+					return;
+				}
+				setRoom({ ...data, number: Number(data.number) });
+				setDisplayedImageUrls(data.images || []);
+				setHasLoaded(true);
+			};
+			fetchRoom();
+		}
+	}, [id, supabase]);
+
+	const handleImageAdd = useCallback((file: File) => {
 		const tempUrl = URL.createObjectURL(file);
-		setRoomImagesUrls((prev) => [...prev, tempUrl]);
-		setRoomImagesFiles((prev) => [...prev, file]);
+		setDisplayedImageUrls((prev) => [...prev, tempUrl]);
+		setNewImageFiles((prev) => [...prev, file]);
 	}, []);
 
-	const removeImage = (index: number) => {
-		setRoomImagesFiles((prev) => prev.filter((_, i) => i !== index));
-		setRoomImagesUrls((prev) => prev.filter((_, i) => i !== index));
+	const handleImageRemove = useCallback((url: string) => {
+
+		const index = displayedImageUrls.indexOf(url);
+
+		setDeletedImageUrls((prev) => [...prev, displayedImageUrls[index]]);
+		setDisplayedImageUrls((prev) => prev.filter((_, i) => i !== index));
+		setRoom((prev) => ({ ...prev, images: prev.images.filter((_, i) => i !== index) }));
+	}, [displayedImageUrls]);
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setLoading(true);
+
+		// Validate the room object before proceeding
+		if (!validateRoom(room)) {
+			setLoading(false);
+			return;
+		}
+
+		// Check is there are any new images to upload
+		if (newImageFiles.length > 0) {
+			setNewImageUrls(await uploadImagesToStorage(room.id, newImageFiles));
+		}
+
+		if (mode === 'create') {
+			await createRoom(room, newImageUrls);
+		} else if (mode === 'edit') {
+			await updateRoom(room, newImageUrls, deletedImageUrls);
+		}
+
+		redirect('/admin');
 	};
 
-	const validateRoom = () => {
-		try {
-			roomSchema.parse(room);
-			return true;
-		} catch (err) {
-			console.error('Validation error:', err);
-			setError('Validation failed. Please check the fields.');
-			return false;
-		}
+	const handleDelete = async () => {
+		setLoading(true);
+		await deleteRoom(room);
+		redirect('/admin');
 	};
 
 	return {
 		room,
-		roomImagesFiles,
-		roomImagesUrls,
 		housesData,
+		hasLoaded,
 		loading,
-		error,
+		displayedImageUrls,
 		setRoom,
-		setLoading,
-		setError,
-		updateImagePreview,
-		removeImage,
-		validateRoom,
+		handleImageAdd,
+		handleImageRemove,
+		handleSubmit,
+		handleDelete,
 	};
-};
+}
+
+const validateRoom = (room: Room) => {
+	// Verify that the room object has the required properties
+	if (!room || typeof room !== 'object') {
+		console.error('Invalid room object:', room);
+		return false;
+	}
+
+	const roomSchema = z.object({
+		id: z.string().uuid(),
+		number: z.number().int().positive(),
+		house_id: z.string().uuid(),
+		house_number: z.number().int().positive(),
+		price: z.number().int().positive(),
+		description: z.string().optional(),
+		type: z.string().refine((val) => roomTypes.some((type) => type.value === val), {
+			message: 'Invalid room type',
+		}),
+		beds: z.number().int().refine((val) => roomTypes.some((type) => type.beds === val), {
+			message: 'Invalid number of beds',
+		}),
+		renters: z.array(z.string()).optional(),
+	});
+
+	const parsedRoom = roomSchema.safeParse(room);
+	if (!parsedRoom.success) {
+		console.log('Room', room)
+		parsedRoom.error.errors.forEach((error) => {
+			console.error('Validation error:', parsedRoom.error.errors);
+		});
+		return false;
+	}
+	return true;
+}

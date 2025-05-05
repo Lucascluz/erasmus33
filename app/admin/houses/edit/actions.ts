@@ -1,24 +1,22 @@
 'use server'
 
 import { House } from "@/interfaces/house";
-import { uploadImagesToStorage } from "../actions";
 import { createClient } from "@/utils/supabase/server";
 
-export async function updateHouse(house: House, newHouseImagesFiles: File[], deletedImageUrls: string[]) {
+export async function updateHouse(house: House, newHouseImagesUrls?: string[], deletedImageUrls?: string[]) {
     const supabase = await createClient();
 
     // Update images in storage and get URLs
     if (!house.id) {
         throw new Error("House ID is undefined");
     }
-    const urls = await uploadImagesToStorage(house.id, newHouseImagesFiles);
 
     // Update house in database
     const { error: houseError } = await supabase
         .from('houses')
         .update({
             ...house,
-            images: [...house.images, ...urls],
+            images: newHouseImagesUrls ? [...house.images, ...newHouseImagesUrls] : house.images,
         })
         .eq('id', house.id);
 
@@ -27,21 +25,22 @@ export async function updateHouse(house: House, newHouseImagesFiles: File[], del
         throw houseError;
     }
 
-
     // Extract the file paths from the URLs
-    const deletedImagePaths = deletedImageUrls.map((url) => {
-        const urlParts = url.split('/');
-        return house.id + "/" + urlParts[urlParts.length - 1];
-    });
-
-    // Delete deleted images from storage
-    const { error: deleteError } = await supabase.storage
-        .from('houses')
-        .remove(deletedImagePaths);
-
-    if (deleteError) {
-        console.error('Error deleting images:', deleteError);
-        throw deleteError;
+    if (deletedImageUrls && deletedImageUrls.length > 0) {
+        const deletedImagePaths = deletedImageUrls.map((url) => {
+            const urlParts = url.split('/');
+            return house.id + "/" + urlParts[urlParts.length - 1];
+        });
+    
+        // Delete deleted images from storage
+        const { error: deleteError } = await supabase.storage
+            .from('house_images')
+            .remove(deletedImagePaths);
+    
+        if (deleteError) {
+            console.error('Error deleting images:', deleteError);
+            throw deleteError;
+        }
     }
 }
 

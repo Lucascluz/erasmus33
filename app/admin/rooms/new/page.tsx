@@ -1,5 +1,5 @@
 import BackButton from '@/components/admin/back-button';
-import RoomFormNew from '@/components/rooms/room-new-form';
+import RoomForm from '@/components/rooms/room-form';
 
 export default async function NewRoomPage() {
 	return (
@@ -8,7 +8,7 @@ export default async function NewRoomPage() {
 				<BackButton />
 				<h1 className='text-3xl font-bold'>New Room</h1>
 			</div>
-			<RoomFormNew />
+			<RoomForm mode={"create"}/>
 		</div>
 	);
 }
