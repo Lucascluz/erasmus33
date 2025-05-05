@@ -1,6 +1,5 @@
 import BackButton from '@/components/admin/back-button';
 import HouseForm from '@/components/houses/house-form';
-import HouseFormNew from '@/components/houses/house-new-form';
 
 export default async function HouseNewPage() {
 	return (
