@@ -36,7 +36,6 @@ export function useRoomForm({ mode, id }: { mode: 'create' | 'edit'; id?: string
 	const [housesData, setHousesData] = useState<{ id: string; number: number }[]>([]);
 	const [displayedImageUrls, setDisplayedImageUrls] = useState<string[]>([]);
 	const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
-	const [newImageUrls, setNewImageUrls] = useState<string[]>([]);
 	const [deletedImageUrls, setDeletedImageUrls] = useState<string[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [hasLoaded, setHasLoaded] = useState(mode === 'create');
@@ -115,8 +114,9 @@ export function useRoomForm({ mode, id }: { mode: 'create' | 'edit'; id?: string
 		}
 
 		// Check is there are any new images to upload
+		let newImageUrls: string[] = [];
 		if (newImageFiles.length > 0) {
-			setNewImageUrls(await uploadImagesToStorage(room.id, newImageFiles));
+			newImageUrls = await uploadImagesToStorage(room.id, newImageFiles);
 		}
 
 		if (mode === 'create') {

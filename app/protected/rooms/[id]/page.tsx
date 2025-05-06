@@ -6,6 +6,7 @@ import { createClient } from '@/utils/supabase/client';
 import RoomGallery from '@/components/rooms/room-gallery';
 import RoomInfoCard from '@/components/rooms/room-info-card';
 import { Room } from '@/interfaces/room';
+import { Spinner } from '@heroui/react';
 
 export default function RoomViewPage() {
 
@@ -40,9 +41,21 @@ export default function RoomViewPage() {
 		fetchRoom();
 	}, [id]);
 
-	if (loading) return <div>Carregando...</div>;
-	if (error) return <div>{error}</div>;
-	if (!room) return <div>Quarto não encontrado.</div>;
+	if (loading) {
+		return (
+			<div className='flex justify-center h-screen'>
+				<Spinner size='lg' color='primary' />
+			</div>
+		);
+	}
+
+	if (!room) {
+		return (
+			<div className='flex justify-center h-screen'>
+				<p className='text-red-500'>{error}</p>
+			</div>
+		);
+	}
 
 	return (
 		<>

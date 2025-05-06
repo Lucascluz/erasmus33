@@ -3,7 +3,7 @@
 import { House } from "@/interfaces/house";
 import { createClient } from "@/utils/supabase/server";
 
-export async function updateHouse(house: House, newHouseImagesUrls?: string[], deletedImageUrls?: string[]) {
+export async function updateHouse(house: House, newHouseImagesUrls: string[], deletedImageUrls: string[]) {
     const supabase = await createClient();
 
     // Update images in storage and get URLs
@@ -16,7 +16,7 @@ export async function updateHouse(house: House, newHouseImagesUrls?: string[], d
         .from('houses')
         .update({
             ...house,
-            images: newHouseImagesUrls ? [...house.images, ...newHouseImagesUrls] : house.images,
+            images: house.images.concat(newHouseImagesUrls),
         })
         .eq('id', house.id);
 
@@ -31,12 +31,12 @@ export async function updateHouse(house: House, newHouseImagesUrls?: string[], d
             const urlParts = url.split('/');
             return house.id + "/" + urlParts[urlParts.length - 1];
         });
-    
+
         // Delete deleted images from storage
         const { error: deleteError } = await supabase.storage
             .from('house_images')
             .remove(deletedImagePaths);
-    
+
         if (deleteError) {
             console.error('Error deleting images:', deleteError);
             throw deleteError;

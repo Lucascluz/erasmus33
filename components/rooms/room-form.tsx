@@ -30,14 +30,6 @@ export default function RoomForm({ mode, id }: { mode: 'create' | 'edit'; id?: s
         handleDelete,
     } = useRoomForm({ mode, id });
 
-    if (mode === 'edit' && !hasLoaded) {
-        return (
-            <div className='flex justify-center h-screen'>
-                <Spinner size='lg' color='primary' />
-            </div>
-        );
-    }
-
     return (
         <Card className='p-4 max-w-3xl mx-auto'>
             <form className='space-y-4' onSubmit={handleSubmit}>

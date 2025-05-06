@@ -23,7 +23,7 @@ export default async function HousesPage() {
         <>
             <h1 className='text-3xl font-bold mb-6'>Explore Houses</h1>
             {houses.map((house: House) => (
-                <Card isBlurred className='mx-auto grid grid-cols-1 lg:grid-cols-5 gap-6 p-2' key={house.id}>
+                <Card className='mx-auto grid grid-cols-1 lg:grid-cols-5 gap-2 p-2 mb-16' key={house.id}>
                     <div className='lg:col-span-4'>
                         <HouseGallery images={house.images} />
                     </div>

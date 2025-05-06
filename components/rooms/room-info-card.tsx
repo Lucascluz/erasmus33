@@ -14,13 +14,13 @@ export default function RoomInfoCard({ room }: { room: Room }) {
 				<div className='text-sm text-muted-foreground'>
 					Tipo: {`${room.type} room`}
 				</div>
-				{room.type == 'single' ? (
+				{room.type == 'single' ? (	
 					<div className='text-sm text-muted-foreground'>
-						Disponibilidade: {room.is_available ? 'Disponivel' : 'Não disponivel'}
+						{room.is_available ? 'Disponivel' : 'Não disponivel'}
 					</div>
 				) : (
 					<div className='text-sm text-muted-foreground'>
-						Disponibilidade: {room.beds - room.renters.length} vagas disponíveis
+						{room.beds - room.renters.length} vagas disponíveis
 					</div>
 				)}
 			</Card>

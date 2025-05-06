@@ -22,7 +22,6 @@ export function useHouseForm({ mode, id }: { mode: 'create' | 'edit'; id?: strin
 	const [house, setHouse] = useState<House>(defaultHouse);
 	const [displayedImageUrls, setDisplayedImageUrls] = useState<string[]>([]);
 	const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
-	const [newImageUrls, setNewImageUrls] = useState<string[]>([]);
 	const [deletedImageUrls, setDeletedImageUrls] = useState<string[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [hasLoaded, setHasLoaded] = useState(mode === 'create');
@@ -76,9 +75,16 @@ export function useHouseForm({ mode, id }: { mode: 'create' | 'edit'; id?: strin
 		}
 
 		// Check is there are any new images to upload
+		let newImageUrls: string[] = [];
 		if (newImageFiles.length > 0) {
-			setNewImageUrls(await uploadImagesToStorage(house.id, newImageFiles));
+			newImageUrls = await uploadImagesToStorage(house.id, newImageFiles);
 		}
+
+		console.log(mode)
+		console.log('Updating house:', house);
+		console.log('New image files:', newImageFiles);
+		console.log('New image URLs:', newImageUrls);
+		console.log('Deleted image URLs:', deletedImageUrls);
 
 		if (mode === 'create') {
 			await createHouse(house, newImageUrls);
@@ -128,7 +134,7 @@ const validateHouse = (house: House) => {
 	if (!parsedHouse.success) {
 		console.log('House', house)
 		parsedHouse.error.errors.forEach((error) => {
-			console.error('Validation error:', parsedHouse.error.errors);
+			console.error('Validation error:', error.message);
 		});
 		return false;
 	}

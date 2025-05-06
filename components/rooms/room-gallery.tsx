@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Image } from '@heroui/image';
+import { Card, ScrollShadow } from '@heroui/react';
 
 interface RoomGalleryProps {
 	images: string[];
@@ -11,7 +12,7 @@ export default function RoomGallery({ images }: RoomGalleryProps) {
 	const [selected, setSelected] = useState(images[0]);
 
 	return (
-		<div>
+		<Card className='flex flex-col gap-4 p-4 mx-auto'>
 			<div className='w-full mx-auto aspect-video relative shadow-md'>
 				<Image
 					src={selected}
@@ -21,19 +22,22 @@ export default function RoomGallery({ images }: RoomGalleryProps) {
 				/>
 			</div>
 
-			<div className='mt-2 gap-2 justify-start flex flex-wrap'>
-				{images.map((img, index) => (
-					<Image
-						isZoomed
-						key={index}
-						src={img}
-						alt={`Imagem ${index + 1}`}
-						width={176}
-						className='cursor-pointer'
-						onClick={() => setSelected(img)}
-					/>
-				))}
-			</div>
-		</div>
+			<Card className='p-2'>
+				<div className='flex gap-2'>
+					{images.map((img, index) => (
+						<Image
+							isZoomed
+							key={index}
+							src={img}
+							alt={`Imagem ${index + 1}`}
+							sizes='(100vw - 2rem) 100vw'
+							width={1920}
+							className='cursor-pointer'
+							onClick={() => setSelected(img)}
+						/>
+					))}
+				</div>
+			</Card>
+		</Card>
 	);
 }
