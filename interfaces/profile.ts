@@ -8,4 +8,7 @@ export interface Profile {
 	country: string;
 	preferred_language: string | 'pt' | 'en';
 	role: string | 'user'; // Default role
+	arrival_date?: Date; // ISO string
+	departure_date?: Date; // ISO string
+	is_active: boolean; // Default true
 }

@@ -45,13 +45,6 @@ export default async function Navbar() {
                         {'Rooms'}
                     </Link>
                 </NavbarItem>
-                {/* <NavbarItem key={'about'} className='hidden sm:block'>
-                    <Link
-                        className='text-white hover:text-gray-400 cursor-pointer'
-                        href={'/about'}>
-                        {'About us'}
-                    </Link>
-                </NavbarItem> */}
             </NavbarContent>
 
             <NavbarItem>

@@ -5,11 +5,9 @@ import { Tabs, Tab } from '@heroui/react';
 import HousesManagement from './house-management';
 import RoomsManagement from './rooms-management';
 import UsersManagement from './users-management';
-import PaymentsManagement from './payments-management';
 import { Room } from '@/interfaces/room';
 import { House } from '@/interfaces/house';
 import { Profile } from '@/interfaces/profile';
-import AnalyticsReports from './analytics-reports';
 
 export default function ManagementTabs({
 	profiles,
@@ -27,6 +25,9 @@ export default function ManagementTabs({
 			</Tab>
 			<Tab key='rooms' title='Rooms'>
 				<RoomsManagement rooms={rooms} />
+			</Tab>
+			<Tab key='users' title='Users'>
+				<UsersManagement profiles={profiles} />
 			</Tab>
 		</Tabs>
 	);

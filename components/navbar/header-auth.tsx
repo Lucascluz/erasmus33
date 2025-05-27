@@ -38,7 +38,7 @@ export default async function AuthButton({
 						</div>
 					</div>
 				</DropdownTrigger>
-				<ProfileDropdown role={profile.role} />{' '}
+				<ProfileDropdown id={user_id} role={profile.role} />{' '}
 			</Dropdown>
 		);
 	} else

@@ -83,6 +83,7 @@ export const signUpAction = async (formData: FormData) => {
 		preferred_language: (formData.get('preferred_language')?.toString() ??
 			'en') as 'pt' | 'en',
 		role: (formData.get('role')?.toString() ?? 'user') as 'user',
+		is_active: false,
 	};
 
 	const { error: profileError } = await supabase
