@@ -169,13 +169,10 @@ const validateRoom = (room: Room) => {
 			message: 'Invalid number of beds',
 		}),
 		renters: z.array(z.string()).optional(),
-	});
-
-	const parsedRoom = roomSchema.safeParse(room);
+	}); const parsedRoom = roomSchema.safeParse(room);
 	if (!parsedRoom.success) {
-		console.log('Room', room)
 		parsedRoom.error.errors.forEach((error) => {
-			console.error('Validation error:', parsedRoom.error.errors);
+			console.error('Validation error:', error.message);
 		});
 		return false;
 	}

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
 	Card,
 	CardHeader,
@@ -22,7 +21,7 @@ export default function HouseManagement({ houses }: { houses: House[] }) {
 				<h3 className='text-lg font-semibold'>House Management</h3>
 				<Button
 					color='primary'
-					startContent={<PlusIcon className='h-5 w-5'/>}
+					startContent={<PlusIcon className='h-5 w-5' />}
 					onPress={() => {
 						redirect('/admin/houses/new');
 					}}>

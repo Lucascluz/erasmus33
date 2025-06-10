@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { Tabs, Tab } from '@heroui/react';
 import HousesManagement from './house-management';
 import RoomsManagement from './rooms-management';

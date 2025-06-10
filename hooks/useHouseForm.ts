@@ -75,16 +75,9 @@ export function useHouseForm({ mode, id }: { mode: 'create' | 'edit'; id?: strin
 		}
 
 		// Check is there are any new images to upload
-		let newImageUrls: string[] = [];
-		if (newImageFiles.length > 0) {
+		let newImageUrls: string[] = []; if (newImageFiles.length > 0) {
 			newImageUrls = await uploadImagesToStorage(house.id, newImageFiles);
 		}
-
-		console.log(mode)
-		console.log('Updating house:', house);
-		console.log('New image files:', newImageFiles);
-		console.log('New image URLs:', newImageUrls);
-		console.log('Deleted image URLs:', deletedImageUrls);
 
 		if (mode === 'create') {
 			await createHouse(house, newImageUrls);
@@ -129,10 +122,8 @@ const validateHouse = (house: House) => {
 		description: z.string().optional(),
 		images: z.array(z.string()).optional(),
 	});
-
 	const parsedHouse = houseSchema.safeParse(house);
 	if (!parsedHouse.success) {
-		console.log('House', house)
 		parsedHouse.error.errors.forEach((error) => {
 			console.error('Validation error:', error.message);
 		});

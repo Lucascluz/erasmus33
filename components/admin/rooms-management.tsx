@@ -1,4 +1,3 @@
-import React from 'react';
 import {
 	Card,
 	CardHeader,
@@ -11,9 +10,9 @@ import {
 	TableCell,
 	Button,
 } from '@heroui/react';
-import { CheckIcon, EyeIcon, PencilIcon, PlusIcon, Trash, XIcon } from 'lucide-react';
+import { CheckIcon, EyeIcon, PencilIcon, PlusIcon, XIcon } from 'lucide-react';
 import { Room } from '@/interfaces/room';
-import { redirect, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function RoomsManagement({ rooms }: { rooms: Room[] }) {
 
@@ -22,12 +21,11 @@ export default function RoomsManagement({ rooms }: { rooms: Room[] }) {
 	return (
 		<Card className='w-full p-2'>
 			<CardHeader className='flex justify-between'>
-				<h3 className='text-lg font-semibold'>Rooms Management</h3>
-				<Button
+				<h3 className='text-lg font-semibold'>Rooms Management</h3>				<Button
 					color='primary'
 					startContent={<PlusIcon className='h-5 w-5' />}
 					onPress={() => {
-						redirect('/admin/rooms/new');
+						router.push('/admin/rooms/new');
 					}}>
 					New Room
 				</Button>
@@ -59,11 +57,10 @@ export default function RoomsManagement({ rooms }: { rooms: Room[] }) {
 									)}
 								</TableCell>
 								<TableCell className='text-center'>
-									<div className='flex gap-4 justify-center'>
-										<EyeIcon
-											className='h-5 w-5 hover:text-primary cursor-pointer'
-											onClick={() => redirect(`/protected/rooms/${room.id}`)}
-										/>
+									<div className='flex gap-4 justify-center'>										<EyeIcon
+										className='h-5 w-5 hover:text-primary cursor-pointer'
+										onClick={() => router.push(`/protected/rooms/${room.id}`)}
+									/>
 										<PencilIcon
 											className='h-5 w-5 cursor-pointer hover:text-primary'
 											onClick={() => router.push(`/admin/rooms/edit/${room.id}`)}

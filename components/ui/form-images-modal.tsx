@@ -8,21 +8,19 @@ export const FormImagesModal = ({ images, onRemoveImage }: { images: string[], o
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     return (
-        <div className='grid grid-cols-4 gap-4 py-4'>
-            {images.map((image, index) => (
-                <Card key={index} className='w-full overflow-hidden items-end' isPressable onPress={() => {
-                    console.log(image);
-                    setSelectedImage(image);
-                    setIsOpen(true);
-                }}>
-                    <Image
-                        src={image}
-                        alt={`Room Image ${index + 1}`}
-                        className='w-full object-cover rounded-md'
-                        isZoomed
-                    />
-                </Card>
-            ))}
+        <div className='grid grid-cols-4 gap-4 py-4'>            {images.map((image, index) => (
+            <Card key={index} className='w-full overflow-hidden items-end' isPressable onPress={() => {
+                setSelectedImage(image);
+                setIsOpen(true);
+            }}>
+                <Image
+                    src={image}
+                    alt={`Room Image ${index + 1}`}
+                    className='w-full object-cover rounded-md'
+                    isZoomed
+                />
+            </Card>
+        ))}
 
             <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size='xl' className='overflow-hidden'>
                 <ModalContent className='max-w-2xl'>

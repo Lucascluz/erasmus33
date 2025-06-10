@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
-import { Avatar, Button, Dropdown, DropdownTrigger, User } from '@heroui/react';
+import { Avatar, Button, Dropdown, DropdownTrigger } from '@heroui/react';
 import { createClient } from '@/utils/supabase/client';
 import { redirect } from 'next/navigation';
-import ProfileDropdown from '@/components/navbar/profile-dropdown'; // Import the new Client Component
+import ProfileDropdown from '@/components/navbar/profile-dropdown';
 
 export default async function AuthButton({
 	user_id,

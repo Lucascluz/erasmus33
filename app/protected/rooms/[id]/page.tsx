@@ -6,39 +6,58 @@ import { createClient } from '@/utils/supabase/client';
 import RoomGallery from '@/components/rooms/room-gallery';
 import RoomInfoCard from '@/components/rooms/room-info-card';
 import { Room } from '@/interfaces/room';
+import { Profile } from '@/interfaces/profile';
 import { Spinner } from '@heroui/react';
 
 export default function RoomViewPage() {
-
+	
 	const { id } = useParams();
 	const [room, setRoom] = useState<Room | null>(null);
+	const [user, setUser] = useState<Profile | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		const fetchRoom = async () => {
+		const fetchData = async () => {
 			if (!id || typeof id !== 'string') {
-				setError('ID inválido.');
+				setError('Invalid ID.');
 				setLoading(false);
 				return;
 			}
 
 			const supabase = createClient();
-			const { data, error } = await supabase
+
+			// Fetch room data
+			const { data: roomData, error: roomError } = await supabase
 				.from('rooms')
 				.select('*')
 				.eq('id', id)
 				.single();
 
-			if (error || !data) {
-				setError('Quarto não encontrado.');
+			if (roomError || !roomData) {
+				setError('Room not found.');
 			} else {
-				setRoom(data as Room);
+				setRoom(roomData as Room);
 			}
+
+			// Fetch user profile
+			const { data: { user: authUser } } = await supabase.auth.getUser();
+			if (authUser) {
+				const { data: profileData } = await supabase
+					.from('profiles')
+					.select('*')
+					.eq('user_id', authUser.id)
+					.single();
+
+				if (profileData) {
+					setUser(profileData as Profile);
+				}
+			}
+
 			setLoading(false);
 		};
 
-		fetchRoom();
+		fetchData();
 	}, [id]);
 
 	if (loading) {
@@ -62,9 +81,8 @@ export default function RoomViewPage() {
 			<div className='mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6'>
 				<div className='lg:col-span-3 xl:col-span-3'>
 					<RoomGallery images={room.images} />
-				</div>
-				<div className='lg:col-span-1 xl:col-span-1'>
-					<RoomInfoCard room={room} />
+				</div>				<div className='lg:col-span-1 xl:col-span-1'>
+					<RoomInfoCard room={room} user={user} />
 				</div>
 			</div>
 		</>
