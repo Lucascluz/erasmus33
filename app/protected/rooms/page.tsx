@@ -27,7 +27,7 @@ function RoomsGridSkeleton() {
 }
 
 // Error fallback component
-function RoomsError() {
+function RoomsError({ error }: { error?: string }) {
 	return (
 		<Card className='bg-danger-50 dark:bg-danger-900/20 border border-danger-200 dark:border-danger-800/50'>
 			<CardBody className='text-center p-8 space-y-4'>
@@ -36,9 +36,15 @@ function RoomsError() {
 				</div>
 				<div>
 					<h3 className='text-lg font-semibold text-danger mb-2'>Error Loading Rooms</h3>
-					<p className='text-foreground-600'>
-						We're having trouble loading the rooms. Please try refreshing the page.
+					<p className='text-foreground-600 mb-4'>
+						{error || 'We\'re having trouble loading the rooms. Please try refreshing the page.'}
 					</p>
+					<button
+						onClick={() => window.location.reload()}
+						className='px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger-600 transition-colors'
+					>
+						Retry
+					</button>
 				</div>
 			</CardBody>
 		</Card>
@@ -74,6 +80,7 @@ export default function RoomsPage() {
 		const fetchRooms = async () => {
 			try {
 				setLoading(true);
+				setError(null);
 				const supabase = createClient();
 				const { data: rooms, error } = await supabase
 					.from('rooms')
@@ -82,13 +89,15 @@ export default function RoomsPage() {
 					.order('number', { ascending: true });
 
 				if (error) {
-					setError('Error loading rooms');
+					console.error('Supabase error:', error);
+					setError('Error loading rooms from database');
 					return;
 				}
 
 				setFilteredRooms(rooms || []);
 			} catch (err) {
-				setError('Error loading rooms');
+				console.error('Network error:', err);
+				setError('Network error - please check your connection');
 			} finally {
 				setLoading(false);
 			}
@@ -96,11 +105,11 @@ export default function RoomsPage() {
 
 		fetchRooms();
 	}, []);
+
 	// Handle filter changes
 	const handleFiltersChange = useCallback((rooms: Room[]) => {
 		setFilteredRooms(rooms);
 	}, []);
-
 	// Render content based on state
 	const renderContent = () => {
 		if (loading) {
@@ -108,7 +117,7 @@ export default function RoomsPage() {
 		}
 
 		if (error) {
-			return <RoomsError />;
+			return <RoomsError error={error} />;
 		}
 
 		if (filteredRooms.length === 0) {

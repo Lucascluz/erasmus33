@@ -52,8 +52,20 @@ export const updateSession = async (request: NextRequest) => {
 		return response;
 	} catch (e) {
 		// If you are here, a Supabase client could not be created!
-		// This is likely because you have not set up environment variables.
-		// Check out http://localhost:3000 for Next Steps.
+		// This is likely because you have not set up environment variables or network issues.
+		console.error('Supabase middleware error:', e);
+
+		// For protected routes, redirect to sign-in if there's a connection issue
+		if (request.nextUrl.pathname.startsWith('/protected')) {
+			return NextResponse.redirect(new URL('/sign-in', request.url));
+		}
+
+		// For admin routes, redirect to sign-in if there's a connection issue
+		if (request.nextUrl.pathname.startsWith('/admin')) {
+			return NextResponse.redirect(new URL('/sign-in', request.url));
+		}
+
+		// For other routes, allow them to proceed
 		return NextResponse.next({
 			request: {
 				headers: request.headers,
