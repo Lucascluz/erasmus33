@@ -1,6 +1,6 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# Dependencies
 /node_modules
 /.pnp
 .pnp.*
@@ -10,29 +10,111 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# Testing
 /coverage
+*.test.js
+*.test.ts
+*.test.tsx
+__tests__/
+test/
+tests/
 
-# next.js
+# Next.js
 /.next/
 /out/
+.next/
 
-# production
+# Production builds
 /build
+/dist
+*.tgz
 
-# misc
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+/coverage/
+*.lcov
+.nyc_output
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.*.local
+
+# Operating System Files
 .DS_Store
-*.pem
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
 
-# debug
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+*.log
 
-# vercel
-.vercel
-
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
-.env*.local
+
+# Deployment
+.vercel
+.netlify
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+
+# Large media files (consider using Git LFS or external storage)
+/fotos/
+
+# Optimize large public images - consider compressing or using external CDN
+# Uncomment these if you move images to external storage:
+# /public/guarda/rodoviaria.png
+# /public/misc/folha.png
+# /public/misc/textured-mulberry-paper.jpg
+
+# Optional: ESLint cache
+.eslintcache
+
+# Optional: REPL history
+.node_repl_history
+
+# Optional: npm pack
+*.tgz
+
+# Optional: Yarn Integrity file
+.yarn-integrity
+
+# Storybook build outputs
+build-storybook/
+
+# Optional: Local database files
+*.db
+*.sqlite

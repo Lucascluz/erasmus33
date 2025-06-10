@@ -31,20 +31,25 @@ export default async function Navbar() {
                         {'Home'}
                     </Link>
                 </NavbarItem>
-                <NavbarItem key={'houses'}>
-                    <Link
-                        className='text-white hover:text-gray-400 cursor-pointer'
-                        href={'/protected/houses'}>
-                        {'Houses'}
-                    </Link>
-                </NavbarItem>
-                <NavbarItem key={'rooms'}>
-                    <Link
-                        className='text-white hover:text-gray-400 cursor-pointer'
-                        href={'/protected/rooms'}>
-                        {'Rooms'}
-                    </Link>
-                </NavbarItem>
+
+                {user && (
+                    <>
+                        <NavbarItem key={'houses'}>
+                            <Link
+                                className='text-white hover:text-gray-400 cursor-pointer'
+                                href={'/protected/houses'}>
+                                {'Houses'}
+                            </Link>
+                        </NavbarItem>
+                        <NavbarItem key={'rooms'}>
+                            <Link
+                                className='text-white hover:text-gray-400 cursor-pointer'
+                                href={'/protected/rooms'}>
+                                {'Rooms'}
+                            </Link>
+                        </NavbarItem>
+                    </>
+                )}
             </NavbarContent>
 
             <NavbarItem>
