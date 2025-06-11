@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardBody, Button, Select, SelectItem, Input, Chip } from '@heroui/react';
 import { Filter, X, Search, Home, Users, Bed, Euro, MapPin } from 'lucide-react';
 import { Room } from '@/interfaces/room';
@@ -20,6 +21,7 @@ interface RoomsFilterProps {
 }
 
 export default function RoomsFilter({ onFiltersChange }: RoomsFilterProps) {
+    const searchParams = useSearchParams();
     const [isOpen, setIsOpen] = useState(false);
     const [rooms, setRooms] = useState<Room[]>([]);
     const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
@@ -56,6 +58,15 @@ export default function RoomsFilter({ onFiltersChange }: RoomsFilterProps) {
 
         fetchRooms();
     }, []);
+
+    // Handle URL parameters for house filtering
+    useEffect(() => {
+        const houseParam = searchParams.get('house');
+        if (houseParam && rooms.length > 0) {
+            setFilters(prev => ({ ...prev, house: houseParam }));
+            setIsOpen(true); // Open filters to show the applied filter
+        }
+    }, [searchParams, rooms]);
 
     // Apply filters
     useEffect(() => {
