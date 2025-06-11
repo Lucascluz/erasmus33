@@ -9,7 +9,6 @@ import { useState, useRef, ChangeEvent, JSX } from 'react';
 import { Card } from '@heroui/card';
 import { Button } from '@heroui/button';
 import { Modal, ModalBody, ModalContent } from '@heroui/react';
-import { ArrowUpIcon } from '@heroicons/react/24/solid';
 import 'react-image-crop/dist/ReactCrop.css'; // Ensure this is imported
 import { UploadIcon } from 'lucide-react';
 

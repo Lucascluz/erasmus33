@@ -1,4 +1,4 @@
-import { Card, CardFooter, CardHeader } from '@heroui/react';
+import { Card, CardFooter } from '@heroui/react';
 import Image from 'next/image';
 import Link from 'next/link';
 

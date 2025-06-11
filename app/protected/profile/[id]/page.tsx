@@ -4,7 +4,7 @@ import { placeHolders } from "@/assets/images";
 import { SubmitButton } from "@/components/submit-button";
 import { Profile } from "@/interfaces/profile";
 import { createClient } from "@/utils/supabase/client";
-import { Card, CardHeader, CardFooter, Select, SelectItem, Image, Input } from "@heroui/react";
+import { Card, CardHeader, CardFooter, Image, Input } from "@heroui/react";
 import { redirect, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 

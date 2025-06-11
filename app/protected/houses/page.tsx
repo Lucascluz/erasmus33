@@ -82,9 +82,6 @@ export default function HousesPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Calculate total images across all houses
-    const totalImages = houses.reduce((total, house) => total + (house.images?.length || 0), 0);
-
     // Fetch houses data
     useEffect(() => {
         const fetchHouses = async () => {

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Card, CardBody, Chip } from '@heroui/react';
 import { Room } from '@/interfaces/room';
 import { redirect } from 'next/navigation';
-import { Home, Users, Euro, MapPin, Bed, CheckCircle } from 'lucide-react';
+import { Home, Users, Euro, MapPin, Bed } from 'lucide-react';
 
 export default function RoomCard({ room }: { room: Room }) {
 	const availableSpots = room.type === 'single'

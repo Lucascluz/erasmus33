@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Room } from '@/interfaces/room';
 import { createRoom } from '@/app/admin/rooms/new/actions';

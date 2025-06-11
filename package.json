@@ -1,5 +1,6 @@
 {
-	"private": true,	"scripts": {
+	"private": true,
+	"scripts": {
 		"turbo": "next dev --turbopack",
 		"dev": "next dev",
 		"build": "next build",
@@ -41,6 +42,10 @@
 		"@types/node": "22.10.2",
 		"@types/react": "^19.0.2",
 		"@types/react-dom": "19.0.2",
+		"@typescript-eslint/eslint-plugin": "^8.34.0",
+		"@typescript-eslint/parser": "^8.34.0",
+		"eslint": "^9.28.0",
+		"eslint-config-next": "^15.3.3",
 		"postcss": "8.4.49",
 		"tailwind-merge": "^2.5.2",
 		"tailwindcss": "3.4.17",

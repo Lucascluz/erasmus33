@@ -2,7 +2,7 @@
 
 import { Button } from "@heroui/react";
 import { ArrowLeft } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default function BackButton() {
     return (

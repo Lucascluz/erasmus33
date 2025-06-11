@@ -8,7 +8,6 @@ import {
     Input,
     Select,
     SelectItem,
-    Spinner,
 } from '@heroui/react';
 import { SaveIcon, TrashIcon } from 'lucide-react';
 import ImageCropper from '../ui/image-cropper';
@@ -20,7 +19,6 @@ export default function RoomForm({ mode, id }: { mode: 'create' | 'edit'; id?: s
     const {
         room,
         housesData,
-        hasLoaded,
         loading,
         displayedImageUrls,
         setRoom,
@@ -101,8 +99,8 @@ export default function RoomForm({ mode, id }: { mode: 'create' | 'edit'; id?: s
                 />
 
                 <Card className='p-2'>
-                        <ImageCropper aspectRatio='16/9' callback={handleImageAdd} />
-                        <FormImagesModal images={displayedImageUrls} onRemoveImage={(url) => handleImageRemove(url)} />
+                    <ImageCropper aspectRatio='16/9' callback={handleImageAdd} />
+                    <FormImagesModal images={displayedImageUrls} onRemoveImage={(url) => handleImageRemove(url)} />
                 </Card>
 
                 <CardFooter className='flex justify-between'>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import RoomCard from '@/components/rooms/room-card';
 import { Room } from '@/interfaces/room';
 import { createClient } from '@/utils/supabase/client';
@@ -132,7 +132,6 @@ export default function RoomsPage() {
 			</div>
 		);
 	};
-
 	return (
 		<div className='max-w-7xl mx-auto space-y-6'>
 			{/* Minimal Header */}
@@ -145,8 +144,10 @@ export default function RoomsPage() {
 				</div>
 			</div>
 
-			{/* Filter Component */}
-			<RoomsFilter onFiltersChange={handleFiltersChange} />
+			{/* Filter Component with Suspense */}
+			<Suspense fallback={<div className='h-20 bg-content1/50 rounded-lg animate-pulse' />}>
+				<RoomsFilter onFiltersChange={handleFiltersChange} />
+			</Suspense>
 
 			{/* Rooms Grid */}
 			{renderContent()}

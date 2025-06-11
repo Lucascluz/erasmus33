@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Image } from '@heroui/image';
-import { Card, ScrollShadow } from '@heroui/react';
+import { Card } from '@heroui/react';
 
 interface HouseGalleryProps {
   images: string[];

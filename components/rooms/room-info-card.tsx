@@ -2,9 +2,6 @@ import { Button, Card, CardHeader, CardBody, Chip, Divider } from '@heroui/react
 import {
 	Home,
 	Users,
-	CheckCircle,
-	XCircle,
-	Euro,
 	MessageCircle,
 	Info,
 	MapPin,
