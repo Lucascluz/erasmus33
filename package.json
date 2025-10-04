@@ -1,4 +1,12 @@
 {
+  "name": "erasmus33",
+  "version": "1.0.0",
+  "description": "Student housing platform for Erasmus students in Guarda, Portugal",
+  "author": "Lucas Cruz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lucascluz/erasmus33.git"
+  },
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
