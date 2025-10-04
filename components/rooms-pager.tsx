@@ -38,7 +38,7 @@ async function getRooms(
     // Add search filter if search term is provided
     if (search && search.trim()) {
         const searchTerm = search.trim();
-            query = query.or(`house_number.eq.${searchTerm},number.eq.${searchTerm}`);
+        query = query.or(`house_number.eq.${searchTerm},number.eq.${searchTerm}`);
     }
 
     const { data: rooms, count } = await query
