@@ -49,7 +49,7 @@ async function getHouses(page: number, search?: string, showInactive: boolean = 
   }
 
   const totalCount = count || 0;
-  const hasNextPage = to < totalCount - 1;
+  const hasNextPage = to + 1 < totalCount;
   const hasPrevPage = page > 1;
 
   return {

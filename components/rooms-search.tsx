@@ -32,7 +32,7 @@ export function RoomsSearch({ defaultValue = "", defaultShowUnavailable = false 
                 clearTimeout(searchTimeout);
             }
         };
-    }, [searchTimeout]);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Function to perform search
     const performSearch = useCallback((term: string, includeUnavailable?: boolean) => {

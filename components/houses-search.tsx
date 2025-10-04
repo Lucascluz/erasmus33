@@ -32,7 +32,7 @@ export function HousesSearch({ defaultValue = "", defaultShowInactive = false }:
                 clearTimeout(searchTimeout);
             }
         };
-    }, [searchTimeout]);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Function to perform search
     const performSearch = useCallback((term: string, includeInactive?: boolean) => {

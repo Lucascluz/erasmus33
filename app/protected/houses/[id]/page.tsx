@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import House from "@/lib/types/house";
-import { HouseDetails } from "../../../../components/house-details";
+import { HouseDetails } from "@/components/house-details";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface HousePageProps {
